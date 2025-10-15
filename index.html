@@ -8,6 +8,9 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
      crossorigin=""/>
+    <!-- Leaflet MarkerCluster CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css" />
     <style>
         /* Basic styling for the page and map container */
         body, html {
@@ -21,12 +24,18 @@
             width: 100%;
             height: 100%;
         }
-        /* Styles for the layer selector control */
-        .layer-selector-container {
+        /* Styles for the controls container */
+        .controls-container {
             position: absolute;
             top: 10px;
             right: 10px;
             z-index: 1000; /* Ensure it's above the map */
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        /* Styles for the layer selector control */
+        .layer-selector-container {
             background: white;
             border-radius: 8px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.25);
@@ -51,6 +60,34 @@
             background-size: .65em auto;
             padding-right: 35px; /* Make space for the arrow */
         }
+        /* Styles for the traffic cam toggle */
+        .toggle-container {
+            background: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+            display: flex;
+            align-items: center;
+        }
+        .toggle-container label {
+            margin-left: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            color: #333;
+        }
+        .camera-icon {
+            background: transparent;
+            border: none;
+        }
+        .leaflet-popup-content img {
+            max-width: 280px !important;
+            border-radius: 4px;
+        }
+        .leaflet-popup-content p {
+            margin: 8px 0 0 0;
+            font-size: 12px;
+            color: #555;
+        }
     </style>
 </head>
 <body>
@@ -58,28 +95,37 @@
     <!-- The div element where the map will be rendered -->
     <div id="map"></div>
 
-    <!-- Container for layer switching dropdown -->
-    <div class="layer-selector-container">
-       <select id="layerSelector" class="layer-selector">
-           <option value="google" selected>Google Maps</option>
-           <option value="google_road">Google Road</option>
-           <option value="google_satellite">Google Satellite</option>
-           <option value="osm">OpenStreetMap</option>
-           <option value="onemap">OneMap</option>
-       </select>
+    <!-- Container for map controls -->
+    <div class="controls-container">
+        <!-- Container for layer switching dropdown -->
+        <div class="layer-selector-container">
+           <select id="layerSelector" class="layer-selector">
+               <option value="google" selected>Google Maps</option>
+               <option value="google_road">Google Road</option>
+               <option value="google_satellite">Google Satellite</option>
+               <option value="osm">OpenStreetMap</option>
+               <option value="onemap">OneMap</option>
+           </select>
+        </div>
+        <!-- Container for traffic image toggle -->
+        <div class="toggle-container">
+            <input type="checkbox" id="trafficToggle" checked>
+            <label for="trafficToggle">Traffic Cams</label>
+        </div>
     </div>
 
     <!-- Leaflet.js JavaScript -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
      crossorigin=""></script>
+    <!-- Leaflet MarkerCluster JS -->
+    <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
     <script>
         // Initialize the map and set its view to a specific coordinate and zoom level.
         const map = L.map('map', {
             zoomControl: false // We can disable the default zoom to avoid clutter
         }).setView([1.3521, 103.8198], 12);
         L.control.zoom({ position: 'topleft' }).addTo(map);
-
 
         // Define the tile layers
         const googleLayer = L.tileLayer('https://mt0.googleapis.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
@@ -117,7 +163,6 @@
 
         // --- Layer Switcher Logic ---
         const layerSelector = document.getElementById('layerSelector');
-
         const layers = {
             google: googleLayer,
             google_road: googleRoadLayer,
@@ -125,20 +170,78 @@
             osm: osmLayer,
             onemap: oneMapLayer
         };
-
         let currentLayer = googleLayer;
-
         layerSelector.addEventListener('change', (event) => {
             const selectedLayerKey = event.target.value;
             const selectedLayer = layers[selectedLayerKey];
-
             if (map.hasLayer(currentLayer)) {
                 map.removeLayer(currentLayer);
             }
-
             map.addLayer(selectedLayer);
             currentLayer = selectedLayer;
         });
+
+        // --- Traffic Image Overlay Logic ---
+        const trafficLayer = L.markerClusterGroup();
+        const trafficToggle = document.getElementById('trafficToggle');
+
+        // Custom icon for traffic cameras
+        const cameraIcon = L.divIcon({
+            html: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="28" height="28" style="color: #db4437; stroke: white; stroke-width: 0.5;">
+                        <path d="M4 4h3l2-2h6l2 2h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zm8 14c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/><circle cx="12" cy="12" r="3"/>
+                   </svg>`,
+            className: 'camera-icon',
+            iconSize: [28, 28],
+            iconAnchor: [14, 28],
+            popupAnchor: [0, -28]
+        });
+
+        async function loadTrafficCameras() {
+            try {
+                const response = await fetch('https://api.data.gov.sg/v1/transport/traffic-images');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                const cameras = data.items[0].cameras;
+
+                cameras.forEach(camera => {
+                    const { location, image, timestamp, camera_id } = camera;
+                    const popupContent = `
+                        <div>
+                            <img src="${image}" alt="Traffic image from camera ${camera_id}">
+                            <p>
+                                <strong>Camera ID:</strong> ${camera_id}<br>
+                                <strong>Updated:</strong> ${new Date(timestamp).toLocaleString()}
+                            </p>
+                        </div>`;
+                    
+                    const marker = L.marker([location.latitude, location.longitude], { icon: cameraIcon })
+                        .bindPopup(popupContent);
+                    trafficLayer.addLayer(marker);
+                });
+                
+                // Add the layer to the map if the toggle is checked
+                if (trafficToggle.checked) {
+                    map.addLayer(trafficLayer);
+                }
+
+            } catch (error) {
+                console.error("Could not fetch traffic camera data:", error);
+            }
+        }
+
+        // Toggle functionality
+        trafficToggle.addEventListener('change', () => {
+            if (trafficToggle.checked) {
+                map.addLayer(trafficLayer);
+            } else {
+                map.removeLayer(trafficLayer);
+            }
+        });
+        
+        // Initial load
+        loadTrafficCameras();
     </script>
 
 </body>
