@@ -60,7 +60,7 @@
             background-size: .65em auto;
             padding-right: 35px; /* Make space for the arrow */
         }
-        /* Styles for the traffic cam toggle */
+        /* Styles for the toggle controls */
         .toggle-container {
             background: white;
             padding: 8px 12px;
@@ -111,6 +111,11 @@
         <div class="toggle-container">
             <input type="checkbox" id="trafficToggle" checked>
             <label for="trafficToggle">Traffic Cams</label>
+        </div>
+        <!-- Container for taxi availability toggle -->
+        <div class="toggle-container">
+            <input type="checkbox" id="taxiToggle" checked>
+            <label for="taxiToggle">Taxis</label>
         </div>
     </div>
 
@@ -184,8 +189,6 @@
         // --- Traffic Image Overlay Logic ---
         const trafficLayer = L.markerClusterGroup();
         const trafficToggle = document.getElementById('trafficToggle');
-
-        // Custom icon for traffic cameras
         const cameraIcon = L.divIcon({
             html: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="28" height="28" style="color: #db4437; stroke: white; stroke-width: 0.5;">
                         <path d="M4 4h3l2-2h6l2 2h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zm8 14c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/><circle cx="12" cy="12" r="3"/>
@@ -199,49 +202,74 @@
         async function loadTrafficCameras() {
             try {
                 const response = await fetch('https://api.data.gov.sg/v1/transport/traffic-images');
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                 const data = await response.json();
                 const cameras = data.items[0].cameras;
 
+                // Clear previous markers to ensure data is fresh
+                trafficLayer.clearLayers();
+
                 cameras.forEach(camera => {
                     const { location, image, timestamp, camera_id } = camera;
-                    const popupContent = `
-                        <div>
-                            <img src="${image}" alt="Traffic image from camera ${camera_id}">
-                            <p>
-                                <strong>Camera ID:</strong> ${camera_id}<br>
-                                <strong>Updated:</strong> ${new Date(timestamp).toLocaleString()}
-                            </p>
-                        </div>`;
-                    
-                    const marker = L.marker([location.latitude, location.longitude], { icon: cameraIcon })
-                        .bindPopup(popupContent);
+                    const popupContent = `<div><img src="${image}" alt="Traffic image from camera ${camera_id}"><p><strong>Camera ID:</strong> ${camera_id}<br><strong>Updated:</strong> ${new Date(timestamp).toLocaleString()}</p></div>`;
+                    const marker = L.marker([location.latitude, location.longitude], { icon: cameraIcon }).bindPopup(popupContent);
                     trafficLayer.addLayer(marker);
                 });
                 
-                // Add the layer to the map if the toggle is checked
-                if (trafficToggle.checked) {
-                    map.addLayer(trafficLayer);
-                }
+                if (trafficToggle.checked) map.addLayer(trafficLayer);
 
             } catch (error) {
                 console.error("Could not fetch traffic camera data:", error);
             }
         }
-
-        // Toggle functionality
         trafficToggle.addEventListener('change', () => {
-            if (trafficToggle.checked) {
-                map.addLayer(trafficLayer);
-            } else {
-                map.removeLayer(trafficLayer);
-            }
+            if (trafficToggle.checked) map.addLayer(trafficLayer);
+            else map.removeLayer(trafficLayer);
         });
         
-        // Initial load
+        // Initial load and setup for auto-refresh
         loadTrafficCameras();
+        setInterval(loadTrafficCameras, 20000); // Refresh every 20 seconds
+
+        // --- Taxi Availability Overlay Logic ---
+        const taxiLayer = L.layerGroup();
+        const taxiToggle = document.getElementById('taxiToggle');
+
+        async function updateTaxis() {
+            try {
+                const response = await fetch('https://api.data.gov.sg/v1/transport/taxi-availability');
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const data = await response.json();
+                
+                taxiLayer.clearLayers();
+
+                const coordinates = data.features[0].geometry.coordinates;
+                coordinates.forEach(coord => {
+                    // API gives [longitude, latitude], Leaflet needs [latitude, longitude]
+                    L.circleMarker([coord[1], coord[0]], {
+                        radius: 4,
+                        fillColor: "#fdd835", // A taxi-yellow color
+                        color: "#333",
+                        weight: 1,
+                        opacity: 1,
+                        fillOpacity: 0.8
+                    }).addTo(taxiLayer);
+                });
+            } catch (error) {
+                console.error("Could not fetch taxi availability data:", error);
+            }
+        }
+
+        taxiToggle.addEventListener('change', () => {
+             if (taxiToggle.checked) map.addLayer(taxiLayer);
+             else map.removeLayer(taxiLayer);
+        });
+
+        // Initial load and setup for auto-refresh
+        if (taxiToggle.checked) map.addLayer(taxiLayer);
+        updateTaxis();
+        setInterval(updateTaxis, 30000); // Refresh every 30 seconds
+
     </script>
 
 </body>
