@@ -54,7 +54,7 @@
             -moz-appearance: none;
             appearance: none;
             /* Custom dropdown arrow */
-            background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23333%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22/%3E%3C/svg%3E');
+            background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23333%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22/%3E%3C/svg%E');
             background-repeat: no-repeat;
             background-position: right 12px top 50%;
             background-size: .65em auto;
@@ -74,6 +74,15 @@
             cursor: pointer;
             font-size: 14px;
             color: #333;
+        }
+        /* ADDED: Styles for the new refresh timers */
+        .timer-display {
+            margin-left: auto; /* Pushes timer to the right */
+            padding-left: 10px; /* Space between label and timer */
+            font-size: 13px;
+            color: #777;
+            /* Ensures numbers don't jump around as they change */
+            font-variant-numeric: tabular-nums; 
         }
         .camera-icon {
             background: transparent;
@@ -100,6 +109,43 @@
             color: #555;
             line-height: 1.4;
         }
+
+        /* --- Custom Taxi Cluster Styling --- */
+        /* This overrides the default blue cluster icon color by targeting
+           the custom class we add in the iconCreateFunction */
+        .marker-cluster-taxi {
+            /* This styles the outer ring */
+            background-color: rgba(253, 216, 53, 0.5); /* Lighter taxi yellow */
+        }
+        .marker-cluster-taxi div {
+            /* This styles the inner circle */
+            background-color: rgba(253, 216, 53, 0.8); /* Taxi yellow, 80% opaque */
+            border: 3px solid rgba(249, 198, 2, 0.9); /* Darker yellow border */
+            
+            /* This styles the number */
+            color: #333; /* Dark text for yellow bg */
+            text-shadow: 1px 1px 0 rgba(255,255,255,0.5); /* Slight white shadow */
+        }
+        /* --- End Custom Taxi Cluster Styling --- */
+
+        /* --- Custom Michelin Cluster Styling --- */
+        .marker-cluster-michelin {
+            background-color: rgba(220, 53, 69, 0.5); /* Lighter Michelin red */
+        }
+        .marker-cluster-michelin div {
+            background-color: rgba(220, 53, 69, 0.8); /* Michelin red, 80% opaque */
+            border: 3px solid rgba(187, 39, 51, 0.9); /* Darker red border */
+            
+            color: #fff; /* White text for red bg */
+            text-shadow: 1px 1px 0 rgba(0,0,0,0.2);
+        }
+        /* --- End Custom Michelin Cluster Styling --- */
+
+        .michelin-icon {
+            background: transparent;
+            border: none;
+        }
+
     </style>
 </head>
 <body>
@@ -112,33 +158,42 @@
         <!-- Container for layer switching dropdown -->
         <div class="layer-selector-container">
            <select id="layerSelector" class="layer-selector">
-               <option value="google" selected>Google Maps</option>
-               <option value="google_road">Google Road</option>
-               <option value="google_satellite">Google Satellite</option>
-               <option value="osm">OpenStreetMap</option>
-               <option value="onemap">OneMap</option>
+                <option value="google" selected>Google Maps</option>
+                <option value="google_road">Google Road</option>
+                <option value="google_satellite">Google Satellite</option>
+                <option value="osm">OpenStreetMap</option>
+                <option value="onemap">OneMap</option>
            </select>
         </div>
         <!-- Container for traffic image toggle -->
         <div class="toggle-container">
             <input type="checkbox" id="trafficToggle" checked>
             <label for="trafficToggle">Traffic Cams</label>
+            <span id="trafficTimer" class="timer-display"></span> <!-- ADDED -->
         </div>
         <!-- Container for taxi availability toggle -->
         <div class="toggle-container">
             <input type="checkbox" id="taxiToggle" checked>
             <label for="taxiToggle">Taxis</label>
+            <span id="taxiTimer" class="timer-display"></span> <!-- ADDED -->
+        </div>
+        <!-- Container for Michelin toggle -->
+        <div class="toggle-container">
+            <input type="checkbox" id="michelinToggle" checked>
+            <label for="michelinToggle">Michelin Guide 2025</label>
         </div>
     </div>
-
+ 
     <!-- Leaflet.js JavaScript -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
      crossorigin=""></script>
     <!-- Leaflet MarkerCluster JS -->
     <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
-    <!-- JSZip for handling zipped files -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <!-- 
+      FIX: All JavaScript logic is now correctly placed *inside* the <body> tag
+      and before the closing </body> tag.
+    -->
     <script>
         // Initialize the map and set its view to a specific coordinate and zoom level.
         const map = L.map('map', {
@@ -230,7 +285,9 @@
                     trafficLayer.addLayer(marker);
                 });
                 
-                if (trafficToggle.checked) map.addLayer(trafficLayer);
+                if (trafficToggle.checked && !map.hasLayer(trafficLayer)) {
+                    map.addLayer(trafficLayer);
+                }
 
             } catch (error) {
                 console.error("Could not fetch traffic camera data:", error);
@@ -241,12 +298,78 @@
             else map.removeLayer(trafficLayer);
         });
         
+        // --- Countdown Timer Logic ---
+        const trafficTimerDisplay = document.getElementById('trafficTimer');
+        const taxiTimerDisplay = document.getElementById('taxiTimer');
+        
+        const TRAFFIC_REFRESH_INTERVAL = 20; // seconds
+        const TAXI_REFRESH_INTERVAL = 30; // seconds
+
+        let trafficCountdown = TRAFFIC_REFRESH_INTERVAL;
+        let taxiCountdown = TAXI_REFRESH_INTERVAL;
+
+        function updateTimerDisplays() {
+            // Decrement and update traffic timer
+            if (trafficCountdown > 0) {
+                trafficCountdown--;
+            }
+            trafficTimerDisplay.textContent = `( ${trafficCountdown}s )`;
+
+            // Decrement and update taxi timer
+            if (taxiCountdown > 0) {
+                taxiCountdown--;
+            }
+            taxiTimerDisplay.textContent = `( ${taxiCountdown}s )`;
+        }
+
+        // Set initial values
+        trafficTimerDisplay.textContent = `( ${TRAFFIC_REFRESH_INTERVAL}s )`;
+        taxiTimerDisplay.textContent = `( ${TAXI_REFRESH_INTERVAL}s )`;
+        
+        // Start the 1-second UI updater
+        setInterval(updateTimerDisplays, 1000);
+
+        // --- End Countdown Timer Logic ---
+
         // Initial load and setup for auto-refresh
         loadTrafficCameras();
-        setInterval(loadTrafficCameras, 20000); // Refresh every 20 seconds
+        // MODIFIED: Added countdown reset to the interval
+        setInterval(() => {
+            loadTrafficCameras();
+            trafficCountdown = TRAFFIC_REFRESH_INTERVAL + 1; // +1 to account for immediate tick
+        }, TRAFFIC_REFRESH_INTERVAL * 1000); 
 
         // --- Taxi Availability Overlay Logic ---
-        const taxiLayer = L.layerGroup();
+        
+        // ** MODIFICATION 1: Use L.markerClusterGroup instead of L.layerGroup **
+        const taxiLayer = L.markerClusterGroup({
+            showCoverageOnHover: false, // Disables the cluster bounds on hover
+            spiderfyOnMaxZoom: false, // Prevents "spider-web" effect on click
+            maxClusterRadius: 60, // Group markers in a 60px radius
+            disableClusteringAtZoom: 16, // Show individual taxis when zoomed in
+            
+            // ** MODIFICATION 2: Add iconCreateFunction to style clusters **
+            iconCreateFunction: function(cluster) {
+                const count = cluster.getChildCount();
+                let c = ' marker-cluster-';
+                if (count < 100) {
+                    c += 'small';
+                } else if (count < 1000) {
+                    c += 'medium';
+                } else {
+                    c += 'large';
+                }
+
+                // We add our custom 'marker-cluster-taxi' class here.
+                // The default 'marker-cluster' and size classes (small/medium/large)
+                // from MarkerCluster.Default.css will still apply for sizing.
+                return L.divIcon({
+                    html: `<div><span>${count}</span></div>`,
+                    className: 'marker-cluster marker-cluster-taxi' + c,
+                    iconSize: null // Let default CSS handle sizing
+                });
+            }
+        });
         const taxiToggle = document.getElementById('taxiToggle');
 
         async function updateTaxis() {
@@ -255,7 +378,7 @@
                 if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                 const data = await response.json();
                 
-                taxiLayer.clearLayers();
+                taxiLayer.clearLayers(); // This works on markerClusterGroup too
 
                 const coordinates = data.features[0].geometry.coordinates;
                 coordinates.forEach(coord => {
@@ -267,7 +390,7 @@
                         weight: 1,
                         opacity: 1,
                         fillOpacity: 0.8
-                    }).addTo(taxiLayer);
+                    }).addTo(taxiLayer); // Add to the markerClusterGroup
                 });
             } catch (error) {
                 console.error("Could not fetch taxi availability data:", error);
@@ -282,9 +405,413 @@
         // Initial load and setup for auto-refresh
         if (taxiToggle.checked) map.addLayer(taxiLayer);
         updateTaxis();
-        setInterval(updateTaxis, 30000); // Refresh every 30 seconds
+        // MODIFIED: Added countdown reset to the interval
+        setInterval(() => {
+            updateTaxis();
+            taxiCountdown = TAXI_REFRESH_INTERVAL + 1; // +1 to account for immediate tick
+        }, TAXI_REFRESH_INTERVAL * 1000); 
+
+        // --- Michelin Restaurant Overlay Logic ---
+        const michelinToggle = document.getElementById('michelinToggle');
+        
+        // Define a custom star icon for Michelin restaurants
+        const michelinIcon = L.divIcon({
+            html: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="26" height="26" style="color: #dc3545; stroke: white; stroke-width: 0.5;">
+                        <path d="M12 17.27l-5.18 3.12 1.4-6.03-4.38-3.77 6.06-.52L12 4.5l2.09 5.57 6.06.52-4.38 3.77 1.4 6.03z"/>
+                   </svg>`,
+            className: 'michelin-icon',
+            iconSize: [26, 26],
+            iconAnchor: [13, 26],
+            popupAnchor: [0, -26]
+        });
+
+        // Create a cluster group for Michelin, similar to taxis
+        const michelinLayer = L.markerClusterGroup({
+            showCoverageOnHover: false,
+            spiderfyOnMaxZoom: false,
+            maxClusterRadius: 50,
+            disableClusteringAtZoom: 17,
+            // Custom cluster icon function
+            iconCreateFunction: function(cluster) {
+                const count = cluster.getChildCount();
+                let c = ' marker-cluster-';
+                if (count < 10) c += 'small';
+                else if (count < 100) c += 'medium';
+                else c += 'large';
+                
+                // Add our custom 'marker-cluster-michelin' class
+                return L.divIcon({
+                    html: `<div><span>${count}</span></div>`,
+                    className: 'marker-cluster marker-cluster-michelin' + c,
+                    iconSize: null
+                });
+            }
+        });
+
+        // FIX: Embed the CSV data directly into a string to bypass
+        // the fetch() error in the sandboxed environment.
+        const michelinCSVData =`Distinction,Restaurant Name,Lat,Long
+Three MICHELIN Stars,Les Amis,1.3066019,103.8314361
+Three MICHELIN Stars,Odette,1.2897067,103.8514433
+Three MICHELIN Stars,Zén,1.2794272,103.8403404
+Two MICHELIN Stars,Cloudstreet,1.2808406,103.8469588
+Two MICHELIN Stars,Jaan by Kirk Westaway,1.2933448,103.85309
+Two MICHELIN Stars,Meta,1.2939004,103.8418116
+Two MICHELIN Stars,Saint Pierre,1.2862514,103.8542577
+Two MICHELIN Stars,Shoukouwa,1.2861235,103.8541527
+Two MICHELIN Stars,Sushi Sakuta,1.2930723,103.8585567
+Two MICHELIN Stars,Thevar,1.2936417,103.8414263
+One MICHELIN Star,Alma,1.308128,103.8341296
+One MICHELIN Star,Araya,1.2787787,103.8420643
+One MICHELIN Star,Born,1.2803733,103.8438899
+One MICHELIN Star,Buona Terra,1.310717,103.834701
+One MICHELIN Star,Burnt Ends,1.304606,103.8089925
+One MICHELIN Star,Candlenut,1.3058022,103.810095
+One MICHELIN Star,Chaleur,1.27922,103.842153
+One MICHELIN Star,CUT,1.2850908,103.8598243
+One MICHELIN Star,Esora,1.2936728,103.8415142
+One MICHELIN Star,Euphoria,1.2774708,103.8441306
+One MICHELIN Star,Hamamoto,1.2779357,103.8442878
+One MICHELIN Star,Hill Street Tai Hwa Pork Noodle,1.3051265,103.8625357
+One MICHELIN Star,Iggy's,1.3060925,103.8292236
+One MICHELIN Star,Imperial Treasure Fine Teochew Cuisine (Orchard),1.3048425,103.8318243
+One MICHELIN Star,Jag,1.2911018,103.8402617
+One MICHELIN Star,Labyrinth,1.2897489,103.8562976
+One MICHELIN Star,Lei Garden,1.2953183,103.8523584
+One MICHELIN Star,Lerouy,1.2939491,103.841848
+One MICHELIN Star,Ma Cuisine,1.2783104,103.8418175
+One MICHELIN Star,Marguerite,1.2848354,103.8641817
+One MICHELIN Star,Nae:um,1.2803318,103.8475438
+One MICHELIN Star,Nouri,1.2802746,103.8466022
+One MICHELIN Star,Omakase @ Stevens,1.3136224,103.8288613
+One MICHELIN Star,Pangium,1.3145033,103.8093295
+One MICHELIN Star,Seroja,1.2996321,103.8583743
+One MICHELIN Star,Shisen Hanten,1.3018688,103.8358989
+One MICHELIN Star,Summer Palace,1.3047183,103.8246565
+One MICHELIN Star,Summer Pavilion,1.2906013,103.8603033
+One MICHELIN Star,Sushi Ichi,1.3049283,103.8331385
+One MICHELIN Star,Waku Ghin,1.2841227,103.8590584
+One MICHELIN Star,Whitegrass,1.2953948,103.8521742
+One MICHELIN Star,Willow,1.2873483,103.8473675
+MICHELIN Green Star,Fiz,1.2796868,103.8440099
+MICHELIN Green Star,Seroja,1.2996321,103.8583743
+Bib Gourmand,A Noodle Story,1.2793453,103.846555
+Bib Gourmand,Adam Rd Noo Cheng Big Prawn Noodle,1.3242218,103.814164
+Bib Gourmand,Alliance Seafood,1.3119859,103.8397289
+Bib Gourmand,Anglo Indian (Shenton Way),1.2791254,103.8502954
+Bib Gourmand,Ar Er Soup,1.2868576,103.8081753
+Bib Gourmand,Bahrakath Mutton Soup,1.3241038,103.8141321
+Bib Gourmand,Beach Road Fish Head Bee Hoon,1.3233389,103.8541373
+Bib Gourmand,Bismillah Biryani (Little India),1.3050455,103.853686
+Bib Gourmand,Boon Tong Kee (Balestier Road),1.3255172,103.8495448
+Bib Gourmand,Chai Chuan Tou Yang Rou Tang,1.2851123,103.8222821
+Bib Gourmand,Chef Kang's Noodle House,1.3371611,103.848865
+Bib Gourmand,Cheok Kee,1.321347,103.8702067
+Bib Gourmand,Chey Sua Carrot Cake,1.3380331,103.844648
+Bib Gourmand,Chuan Kee Boneless Braised Duck,1.3111425,103.7880953
+Bib Gourmand,Cumi Bali,1.2781374,103.844249
+Bib Gourmand,Da Shi Jia Big Prawn Mee,1.2984443,103.8391425
+Bib Gourmand,Delhi Lahori,1.3059209,103.8507309
+Bib Gourmand,Dudu Cooked Food,1.2878588,103.8296379
+Bib Gourmand,Eminent Frog Porridge & Seafood (Lor 19),1.3127383,103.879233
+Bib Gourmand,Fei Fei Roasted • Noodle,1.3435478,103.7375341
+Bib Gourmand,Fico,1.3104435,103.9460923
+Bib Gourmand,Fu Ming Cooked Food,1.2874783,103.8184132
+Bib Gourmand,Hai Nan Xing Zhou Beef Noodle,1.3354401,103.8572761
+Bib Gourmand,Hai Nan Zai,1.4316973,103.8282449
+Bib Gourmand,Han Kee,1.326911,103.933075
+Bib Gourmand,Heng (Heng Kee),1.2851322,103.8458905
+Bib Gourmand,Heng Heng Cooked Food,1.3436866,103.7374342
+Bib Gourmand,Heng Kee,1.2851322,103.8458905
+Bib Gourmand,Hong Heng Fried Sotong Prawn Mee,1.2849359,103.832732
+Bib Gourmand,Hong Kong Yummy Soup,1.2862376,103.8044523
+Bib Gourmand,Hoo Kee Bak Chang,1.2834413,103.8158967
+Bib Gourmand,Hui Wei Chilli Ban Mian,1.3215604,103.8699335
+Bib Gourmand,Indocafé,1.3111111,103.8355556
+Bib Gourmand,J2 Famous Crispy Curry Puff,1.2793332,103.8465844
+Bib Gourmand,Jalan Sultan Prawn Mee,1.311109,103.872773
+Bib Gourmand,Jason Penang Cuisine,1.2869047,103.8081551
+Bib Gourmand,Ji De Lai Hainanese Chicken Rice,1.4316922,103.8281505
+Bib Gourmand,Ji Ji Noodle House,1.2853166,103.8458369
+Bib Gourmand,Jian Bo Tiong Bahru Shui Kueh,1.4403072,103.8012257
+Bib Gourmand,Joo Siah Bak Koot Teh,1.3445713,103.7315622
+Bib Gourmand,Jungle,1.2813885,103.845393
+Bib Gourmand,Kelantan Kway Chap · Pig Organ Soup,1.3073468,103.8567897
+Bib Gourmand,Kitchenman Nasi Lemak,1.3124349,103.8630724
+Bib Gourmand,Koh Brother Pig's Organ Soup,1.2845558,103.832287
+Bib Gourmand,Kok Sen,1.2794333,103.8416097
+Bib Gourmand,Kotuwa,1.2927823,103.8391681
+Bib Gourmand,Kwang Kee Teochew Fish Porridge,1.3118728,103.8398626
+Bib Gourmand,Kwee Heng,1.3118541,103.8397063
+Bib Gourmand,Lagnaa,1.3064483,103.8522415
+Bib Gourmand,Lai Heng Handmade Teochew Kueh,1.3451582,103.7311231
+Bib Gourmand,Lao Fu Zi Fried Kway Teow,1.3080198,103.8856355
+Bib Gourmand,Lian He Ben Ji Claypot,1.2825554,103.8429327
+Bib Gourmand,Lixin Teochew Fishball Noodles,1.3041055,103.831546
+Bib Gourmand,Margaret Drive Sin Kee Chicken Rice,1.3070937,103.7934899
+Bib Gourmand,MP Thai (Vision Exchange),1.3299312,103.7446053
+Bib Gourmand,Muthu's Curry,1.3099202,103.8522443
+Bib Gourmand,Na Na Curry,1.3420717,103.8491142
+Bib Gourmand,Nam Sing Hokkien Fried Mee,1.3082305,103.8855863
+Bib Gourmand,New Lucky Claypot Rice,1.3082997,103.7929826
+Bib Gourmand,No.18 Zion Road Fried Kway Teow,1.2925956,103.8312669
+Bib Gourmand,Outram Park Fried Kway Teow Mee,1.2854065,103.845918
+Bib Gourmand,Ru Ji Kitchen,1.308173,103.7928565
+Bib Gourmand,Selamat Datang Warong Pak Sapari,1.324021,103.814229
+Bib Gourmand,Sik Bao Sin,1.3140535,103.8879353
+Bib Gourmand,Sin Heng Claypot Bak Koot Teh,1.3070632,103.9043627
+Bib Gourmand,Sin Huat Seafood Restaurant,1.3145792,103.8885315
+Bib Gourmand,Singapore Fried Hokkien Mee,1.3231192,103.8548921
+Bib Gourmand,Soh Kee Cooked Food,1.349742,103.718509
+Bib Gourmand,Song Fa Bak Kut Teh (New Bridge Road),1.2852093,103.8447228
+Bib Gourmand,Song Fish Soup,1.3133926,103.7644737
+Bib Gourmand,Song Kee Teochew Fish Porridge,1.3119097,103.8393033
+Bib Gourmand,Soon Huat,1.3072006,103.8523982
+Bib Gourmand,Spinach Soup,1.352083,103.819836
+Bib Gourmand,Tai Seng Fish Soup,1.3109026,103.7879128
+Bib Gourmand,Tai Wah Pork Noodle,1.3071034,103.7933963
+Bib Gourmand,The Blue Ginger,1.2774196,103.8437872
+Bib Gourmand,The Coconut Club (Beach Road),1.3006368,103.8601786
+Bib Gourmand,Tian Tian Hainanese Chicken Rice,1.2804528,103.8447987
+Bib Gourmand,Tiong Bahru Hainanese Boneless Chicken Rice,1.2851888,103.8326424
+Bib Gourmand,To-Ricos Kway Chap,1.3082005,103.8858889
+Bib Gourmand,True Blue Cuisine,1.2945324,103.84935
+Bib Gourmand,Un-Yang-Kor-Dai,1.287117,103.848241
+Bib Gourmand,Whole Earth,1.277244,103.8447081
+Bib Gourmand,Wok Hei Hor Fun,1.287294,103.8181829
+Bib Gourmand,Yhingthai Palace,1.2966831,103.8548295
+Bib Gourmand,Yong Chun Wan Ton Noodle,1.2852423,103.8222931
+Bib Gourmand,Zai Shun Curry Fish Head,1.3435057,103.7371678
+Bib Gourmand,Zhi Wei Xian Zion Road Big Prawn Noodle,1.2924191,103.8310656
+Bib Gourmand,Zhup Zhup,1.3319196,103.8824526
+MICHELIN Selected,545 Whampoa Prawn Noodles,1.3058126,103.8504298
+MICHELIN Selected,91 Fried Kway Teow Mee,1.3030758,103.8639485
+MICHELIN Selected,Ah Heng Duck Rice,1.2851816,103.8457357
+MICHELIN Selected,Ah Hock Fried Hokkien Noodles,1.3641975,103.8666069
+MICHELIN Selected,Ah Ter Authentic Teochew Fish Ball Noodles,1.3728057,103.8544582
+MICHELIN Selected,Allauddin's Briyani,1.3402645,103.8544216
+MICHELIN Selected,Ammãkase,1.284479,103.851082
+MICHELIN Selected,Ann Chin Handmade Popiah,1.3239058,103.8099918
+MICHELIN Selected,Aunty Oats Pancake,1.308232,103.8858505
+MICHELIN Selected,Bar-Roque Grill,1.275521,103.8436042
+MICHELIN Selected,Bedok Chwee Kueh,1.3134024,103.7643697
+MICHELIN Selected,Bhoomi,1.307336,103.8293782
+MICHELIN Selected,Birds Of Paradise (Katong),1.3052488,103.9035674
+MICHELIN Selected,Boon Tong Kee Kway Chap‧Braised Duck,1.2924157,103.8313295
+MICHELIN Selected,Brasserie Astoria,1.288621,103.851462
+MICHELIN Selected,Buko Nero,1.2775877,103.8434931
+MICHELIN Selected,Butcher's Block,1.2955754,103.8540192
+MICHELIN Selected,C.M.Y. Satay,1.282307,103.8429239
+MICHELIN Selected,Ce Soir,1.2943592,103.7959978
+MICHELIN Selected,Cheng Heng Kway Chap and Braised Duck Rice,1.3080463,103.792659
+MICHELIN Selected,Chomp Chomp Satay,1.364188,103.8666239
+MICHELIN Selected,Chung Cheng,1.3054121,103.8915495
+MICHELIN Selected,Claudine,1.3048733,103.8135205
+MICHELIN Selected,Come Daily Fried Hokkien Prawn Mee,1.3380286,103.8446978
+MICHELIN Selected,Da Po,1.3029454,103.8640819
+MICHELIN Selected,Esquina,1.2798595,103.8420714
+MICHELIN Selected,Fatty Ox HK Kitchen,1.2824394,103.8432324
+MICHELIN Selected,Feng Zhen Lor Mee,1.4237323,103.8469891
+MICHELIN Selected,Fiamma,1.2492482,103.8244513
+MICHELIN Selected,Fiz,1.2796868,103.8440099
+MICHELIN Selected,Fleur de Sel,1.2777778,103.8441667
+MICHELIN Selected,Foc (Clarke Quay),1.2906024,103.8464742
+MICHELIN Selected,Food Street Fried Kway Teow Mee,1.2825863,103.8430923
+MICHELIN Selected,Fu He Turtle Soup,1.352083,103.819836
+MICHELIN Selected,Garibaldi,1.2964499,103.8549138
+MICHELIN Selected,Ghim Moh Chwee Kueh,1.3110003,103.7882813
+MICHELIN Selected,Gordon Grill,1.3089104,103.834306
+MICHELIN Selected,Gunther's,1.2966208,103.8549145
+MICHELIN Selected,Heng Gi Goose and Duck Rice,1.305701,103.8506053
+MICHELIN Selected,Heng Long BBQ Chicken Rice,1.2931196,103.8028492
+MICHELIN Selected,Hill Street Fried Kway Teow,1.3204391,103.9353699
+MICHELIN Selected,Hock Hai (Hong Lim) Curry Chicken Noodle,1.324569,103.93068
+MICHELIN Selected,Hock Seng Choon Fish Ball Kway Teow Mee,1.3203366,103.9351963
+MICHELIN Selected,Hoe Kee Kitchen,1.3499698,103.7184099
+MICHELIN Selected,Hokkien Man Hokkien Mee,1.335531,103.8564778
+MICHELIN Selected,Hokkien Street Bak Kut Teh,1.285302,103.8457252
+MICHELIN Selected,Hong Peng La Mian Xiao Long Bao,1.284581,103.8422866
+MICHELIN Selected,Hong Wen Mutton Soup,1.3424297,103.7763727
+MICHELIN Selected,Hougang Traditional Famous Wanton Noodle,1.3080812,103.8853106
+MICHELIN Selected,Hua Xing Bak Kut Teh,1.3451001,103.7311945
+MICHELIN Selected,Huat Heng Fried Oyster,1.3230663,103.8550176
+MICHELIN Selected,Hup Hong Chicken Rice,1.3433995,103.7376504
+MICHELIN Selected,Hup Kee Teochew Fishball Mee,1.2932672,103.8028827
+MICHELIN Selected,Ibid,1.2864337,103.8483365
+MICHELIN Selected,Ichigo Ichie,1.3075063,103.8289979
+MICHELIN Selected,Imperial Treasure Super Peking Duck (Paragon),1.3034034,103.835489
+MICHELIN Selected,Iru Den,1.3104872,103.8342713
+MICHELIN Selected,Ishizawa,1.2951636,103.8535113
+MICHELIN Selected,Ivy's Hainanese Herbal Mutton Soup,1.2759677,103.7913379
+MICHELIN Selected,Jade Palace,1.3059609,103.8285176
+MICHELIN Selected,Jian Bo Shui Kueh,1.2849131,103.8325965
+MICHELIN Selected,Jiang-Nan Chun,1.3052848,103.8287235
+MICHELIN Selected,Jiao Cai Seafood,1.4251127,103.8446234
+MICHELIN Selected,Jin Hua,1.3083547,103.8860871
+MICHELIN Selected,Kang Le Fishball Noodles,1.3499318,103.7183585
+MICHELIN Selected,Kang's Wanton Noodle,1.2924504,103.831136
+MICHELIN Selected,Keng Eng Kee (Bukit Merah),1.2857843,103.8037037
+MICHELIN Selected,Ki Su,1.2778923,103.8442296
+MICHELIN Selected,Koka Wanton Noodles,1.3057161,103.8636504
+MICHELIN Selected,L'Antica Pizzeria da Michele,1.2826167,103.8464189
+MICHELIN Selected,La D'Oro,1.3020467,103.8366318
+MICHELIN Selected,Lao Jie Fang,1.2850174,103.8425811
+MICHELIN Selected,Latido,1.278343,103.8443332
+MICHELIN Selected,Leon Kee Claypot Pork Rib Soup,1.2863873,103.8047273
+MICHELIN Selected,Lolla,1.2809785,103.845602
+MICHELIN Selected,Long Kee Wanton Noodle,1.3497487,103.7185122
+MICHELIN Selected,Loong Kee Yong Tau Fu,1.3499609,103.7183841
+MICHELIN Selected,Lor 9 Beef Kway Teow,1.3122058,103.8766747
+MICHELIN Selected,Lor Mee 178,1.2846081,103.8323608
+MICHELIN Selected,Luke's,1.282187,103.847226
+MICHELIN Selected,Maison Boulud,1.2833222,103.8582792
+MICHELIN Selected,Majestic,1.2847423,103.8432282
+MICHELIN Selected,Maxwell Fuzhou Oyster Cake,1.280559,103.8446188
+MICHELIN Selected,Mellben Seafood (Ang Mo Kio),1.3686044,103.836948
+MICHELIN Selected,Min Jiang at Dempsey,1.3046255,103.808144
+MICHELIN Selected,Mustard,1.3079408,103.850663
+MICHELIN Selected,Mustard Seed,1.3628502,103.8712471
+MICHELIN Selected,Na Oh,1.3528249,103.7117347
+MICHELIN Selected,Nasi Lemak Ayam Taliwang,1.3007111,103.844904
+MICHELIN Selected,National Kitchen,1.2906056,103.8519111
+MICHELIN Selected,New World Mutton Soup,1.3250299,103.9304702
+MICHELIN Selected,Nómada,1.2790659,103.8413895
+MICHELIN Selected,Nyonya Chendol,1.3229833,103.8549844
+MICHELIN Selected,Olivia,1.2806358,103.8415896
+MICHELIN Selected,Open Farm Community,1.3058298,103.8155908
+MICHELIN Selected,Osteria Mozza,1.302036,103.8358858
+MICHELIN Selected,Path,1.352083,103.819836
+MICHELIN Selected,People's Park Hainanese Chicken Rice,1.352083,103.819836
+MICHELIN Selected,Podi & Poriyal,1.313845,103.8572848
+MICHELIN Selected,Poh Cheu (KPT Coffee Shop),1.2853962,103.8034259
+MICHELIN Selected,Pondok Makan Indonesia,1.3012845,103.8538526
+MICHELIN Selected,Putien (Kitchener Road),1.309551,103.8573328
+MICHELIN Selected,Quenino,1.305764,103.827012
+MICHELIN Selected,R&B Express,1.312165,103.839664
+MICHELIN Selected,Redhill Pork Porridge,1.2873244,103.8181052
+MICHELIN Selected,Rempapa,1.3166118,103.8929568
+MICHELIN Selected,Revolver,1.2779485,103.8442501
+MICHELIN Selected,Rojak‧Popiah & Cockle,1.2805328,103.8447782
+MICHELIN Selected,San Shu Gong (Geylang),1.3111411,103.8739799
+MICHELIN Selected,San Xiang Rou Cuo Mian,1.3319478,103.9384566
+MICHELIN Selected,Shang Palace,1.3111368,103.8265902
+MICHELIN Selected,Shanyuan Teochew Kway Teow Mian,1.3190803,103.8632879
+MICHELIN Selected,Sheng Seng Fried Prawn Noodle,1.3160852,103.8500003
+MICHELIN Selected,Shi Le Yuan,1.2874028,103.8182751
+MICHELIN Selected,Shunsui,1.2877813,103.8473384
+MICHELIN Selected,Sin Hoi Sai (Tiong Bahru),1.2846559,103.8339491
+MICHELIN Selected,Singapore Famous Rojak,1.3008347,103.8543398
+MICHELIN Selected,Solo,1.2804262,103.8468933
+MICHELIN Selected,Somma,1.2929272,103.8386723
+MICHELIN Selected,Sospiri,1.2798851,103.8514962
+MICHELIN Selected,Spago Dining Room,1.2833034,103.8605846
+MICHELIN Selected,Springleaf Prata Place (Spring Leaf Garden),1.3970326,103.8188156
+MICHELIN Selected,Straits Chinese (Cecil Street),1.2802561,103.8489721
+MICHELIN Selected,Sugarra,1.2553119,103.820203
+MICHELIN Selected,Sushi Hare,1.280357,103.8480142
+MICHELIN Selected,Sushi Katori,1.279515,103.8440103
+MICHELIN Selected,Sushi Masaaki,1.2938023,103.8554594
+MICHELIN Selected,Sushi Ryujiro,1.3066668,103.8312606
+MICHELIN Selected,Sushi Sato,1.30492,103.8084376
+MICHELIN Selected,Sushi Yuki,1.2798493,103.8430536
+MICHELIN Selected,Tambuah Mas (Orchard),1.3036434,103.8349946
+MICHELIN Selected,Terra,1.2779828,103.8441779
+MICHELIN Selected,The 1950's Coffee,1.2822882,103.8432964
+MICHELIN Selected,The Prince,1.2779306,103.844885
+MICHELIN Selected,Tien Lai Rice Stall,1.3346225,103.7214661
+MICHELIN Selected,Tiong Bahru Lien Fa Shui Jing Pau,1.286197,103.8045354
+MICHELIN Selected,Toa Payoh 93 Soon Kueh,1.3214913,103.8700885
+MICHELIN Selected,Torno Subito,1.3058919,103.8113481
+MICHELIN Selected,Tow Kwar Pop,1.2848203,103.8326729
+MICHELIN Selected,Traditional Hakka Lui Cha,1.3495891,103.7183187
+MICHELIN Selected,Tunglok Heen,1.2550122,103.8201681
+MICHELIN Selected,Unforgettable Carrot Cake,1.2844288,103.8221831
+MICHELIN Selected,Ushidoki Wagyu Kaiseki,1.2779071,103.8445116
+MICHELIN Selected,Vue,1.2830712,103.853012
+MICHELIN Selected,Wah Lok,1.2959685,103.852255
+MICHELIN Selected,Wakuda,1.2837271,103.8607884
+MICHELIN Selected,Whampoa Soya Bean & Grass Jelly Drinks,1.323168,103.8542694
+MICHELIN Selected,Xing Yun Hainanese Boneless Chicken Rice,1.3450807,103.7310759
+MICHELIN Selected,Yan Ting,1.3054244,103.8261546
+MICHELIN Selected,Ye Tang,1.3423905,103.776256
+MICHELIN Selected,Yì By Jereme Leung,1.2955861,103.8540165
+MICHELIN Selected,Yong Fu,1.2955328,103.8580569
+MICHELIN Selected,Yong Kee Claypot Bak Kut Teh,1.334832,103.7214561
+MICHELIN Selected,Yong Xiang Xing Tou Fu,1.2852356,103.8428428
+MICHELIN Selected,Zhang Ji Shanghai La Mian Xiao Long Bao,1.2862951,103.804442
+MICHELIN Selected,Zheng Zhi Wen Ji Pig's Organ Soup,1.313495,103.7644081
+MICHELIN Selected,Zi Jing Cheng Hainanese Boneless Chicken Rice,1.2862985,103.8045942
+`;
+
+        // MODIFIED: Changed function to be non-async, as it no longer fetches.
+        function loadMichelinData() {
+            try {
+                // MODIFIED: Use the string variable instead of fetch()
+                const csvText = michelinCSVData;
+                
+                michelinLayer.clearLayers();
+
+                // Parse the CSV data
+                const lines = csvText.trim().split('\n').slice(1); // Skip header row
+                
+                lines.forEach(line => {
+                    // Basic CSV parsing, handles commas in restaurant names if they are quoted
+                    const parts = line.split(',');
+                    if (parts.length < 4) return; // Skip incomplete lines
+
+                    const distinction = parts[0];
+                    const longitudeStr = parts[parts.length - 1];
+                    const latitudeStr = parts[parts.length - 2];
+                    
+                    // Re-join parts of the name that might have been split by commas
+                    const restaurantName = parts.slice(1, parts.length - 2).join(',').replace(/^"(.*)"$/, '$1');
+
+                    // Parse lat/lon strings like "1.31° N"
+                    const lat = parseFloat(latitudeStr);
+                    const lon = parseFloat(longitudeStr);
+
+                    if (isNaN(lat) || isNaN(lon)) {
+                        console.warn('Skipping line, invalid lat/lon:', line);
+                        return;
+                    }
+
+                    // Handle N/S/E/W directions (though data seems to be all N/E)
+                    const finalLat = latitudeStr.includes('° S') ? -lat : lat;
+                    const finalLon = longitudeStr.includes('° W') ? -lon : lon;
+
+                    const popupContent = `
+                        <div style="font-size: 14px; line-height: 1.5;">
+                            <strong style="font-size: 15px;">${restaurantName}</strong><br>
+                            ${distinction}
+                        </div>`;
+                    
+                    const marker = L.marker([finalLat, finalLon], { icon: michelinIcon })
+                                     .bindPopup(popupContent);
+                    
+                    michelinLayer.addLayer(marker);
+                });
+
+                // Add layer to map if toggle is checked
+                if (michelinToggle.checked) {
+                    map.addLayer(michelinLayer);
+                }
+
+            } catch (error) {
+                // MODIFIED: Updated error message to be more general
+                console.error("Could not parse Michelin data:", error);
+            }
+        }
+
+        // Add event listener for the toggle
+        michelinToggle.addEventListener('change', () => {
+             if (michelinToggle.checked) map.addLayer(michelinLayer);
+             else map.removeLayer(michelinLayer);
+        });
+
+        // Initial load of Michelin data
+        loadMichelinData();
 
     </script>
-
+ 
 </body>
 </html>
