@@ -54,7 +54,7 @@
             -moz-appearance: none;
             appearance: none;
             /* Custom dropdown arrow */
-            background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23333%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22/%3E%3C/svg%E');
+            background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%2D%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23333%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22/%3E%3C/svg%3E');
             background-repeat: no-repeat;
             background-position: right 12px top 50%;
             background-size: .65em auto;
@@ -75,7 +75,7 @@
             font-size: 14px;
             color: #333;
         }
-        /* ADDED: Styles for the new refresh timers */
+        /* Styles for the refresh timers */
         .timer-display {
             margin-left: auto; /* Pushes timer to the right */
             padding-left: 10px; /* Space between label and timer */
@@ -84,7 +84,7 @@
             /* Ensures numbers don't jump around as they change */
             font-variant-numeric: tabular-nums; 
         }
-        .camera-icon {
+        .camera-icon, .michelin-icon, .hawker-icon {
             background: transparent;
             border: none;
         }
@@ -109,20 +109,26 @@
             color: #555;
             line-height: 1.4;
         }
+        /* Style for the "View full image" link */
+        .popup-full-image-link {
+            font-size: 12px;
+            color: #007bff;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 5px;
+            cursor: pointer;
+        }
+        .popup-full-image-link:hover {
+            text-decoration: underline;
+        }
 
         /* --- Custom Taxi Cluster Styling --- */
-        /* This overrides the default blue cluster icon color by targeting
-           the custom class we add in the iconCreateFunction */
         .marker-cluster-taxi {
-            /* This styles the outer ring */
             background-color: rgba(253, 216, 53, 0.5); /* Lighter taxi yellow */
         }
         .marker-cluster-taxi div {
-            /* This styles the inner circle */
             background-color: rgba(253, 216, 53, 0.8); /* Taxi yellow, 80% opaque */
             border: 3px solid rgba(249, 198, 2, 0.9); /* Darker yellow border */
-            
-            /* This styles the number */
             color: #333; /* Dark text for yellow bg */
             text-shadow: 1px 1px 0 rgba(255,255,255,0.5); /* Slight white shadow */
         }
@@ -135,16 +141,55 @@
         .marker-cluster-michelin div {
             background-color: rgba(220, 53, 69, 0.8); /* Michelin red, 80% opaque */
             border: 3px solid rgba(187, 39, 51, 0.9); /* Darker red border */
-            
             color: #fff; /* White text for red bg */
             text-shadow: 1px 1px 0 rgba(0,0,0,0.2);
         }
         /* --- End Custom Michelin Cluster Styling --- */
 
-        .michelin-icon {
-            background: transparent;
-            border: none;
+        /* --- Custom Hawker Centre Cluster Styling (NEW) --- */
+        .marker-cluster-hawker {
+            background-color: rgba(40, 167, 69, 0.5); /* Lighter green */
         }
+        .marker-cluster-hawker div {
+            background-color: rgba(40, 167, 69, 0.8); /* Green, 80% opaque */
+            border: 3px solid rgba(33, 136, 56, 0.9); /* Darker green border */
+            color: #fff; /* White text for green bg */
+            text-shadow: 1px 1px 0 rgba(0,0,0,0.2);
+        }
+        /* --- End Custom Hawker Centre Cluster Styling --- */
+
+        /* --- NEW: Image Modal Styling --- */
+        .modal-backdrop {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 2000; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgba(0,0,0,0.85); /* Black w/ opacity */
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            margin: auto;
+            display: block;
+            max-width: 90%;
+            max-height: 90%;
+            border-radius: 8px;
+        }
+        .modal-close {
+            position: absolute;
+            top: 20px;
+            right: 35px;
+            color: #f1f1f1;
+            font-size: 40px;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 1;
+        }
+        /* --- End Image Modal Styling --- */
 
     </style>
 </head>
@@ -152,6 +197,12 @@
 
     <!-- The div element where the map will be rendered -->
     <div id="map"></div>
+
+    <!-- NEW: Image Modal -->
+    <div id="imageModal" class="modal-backdrop">
+      <span class="modal-close" id="modalCloseButton">&times;</span>
+      <img class="modal-content" id="modalImage">
+    </div>
 
     <!-- Container for map controls -->
     <div class="controls-container">
@@ -169,18 +220,23 @@
         <div class="toggle-container">
             <input type="checkbox" id="trafficToggle" checked>
             <label for="trafficToggle">Traffic Cams</label>
-            <span id="trafficTimer" class="timer-display"></span> <!-- ADDED -->
+            <span id="trafficTimer" class="timer-display"></span>
         </div>
         <!-- Container for taxi availability toggle -->
         <div class="toggle-container">
             <input type="checkbox" id="taxiToggle" checked>
             <label for="taxiToggle">Taxis</label>
-            <span id="taxiTimer" class="timer-display"></span> <!-- ADDED -->
+            <span id="taxiTimer" class="timer-display"></span>
         </div>
         <!-- Container for Michelin toggle -->
         <div class="toggle-container">
             <input type="checkbox" id="michelinToggle" checked>
             <label for="michelinToggle">Michelin Guide 2025</label>
+        </div>
+        <!-- Container for Hawker Centre toggle (NEW) -->
+        <div class="toggle-container">
+            <input type="checkbox" id="hawkerToggle" checked>
+            <label for="hawkerToggle">Hawker Centres</label>
         </div>
     </div>
  
@@ -190,14 +246,11 @@
      crossorigin=""></script>
     <!-- Leaflet MarkerCluster JS -->
     <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
-    <!-- 
-      FIX: All JavaScript logic is now correctly placed *inside* the <body> tag
-      and before the closing </body> tag.
-    -->
+    
     <script>
-        // Initialize the map and set its view to a specific coordinate and zoom level.
+        // Initialize the map and set its view
         const map = L.map('map', {
-            zoomControl: false // We can disable the default zoom to avoid clutter
+            zoomControl: false
         }).setView([1.3521, 103.8198], 12);
         L.control.zoom({ position: 'topleft' }).addTo(map);
 
@@ -206,22 +259,18 @@
             maxZoom: 20,
             attribution: 'Map data &copy; <a href="https://www.google.com/maps">Google</a>'
         });
-
         const googleRoadLayer = L.tileLayer('https://mt0.googleapis.com/vt/lyrs=r&x={x}&y={y}&z={z}', {
             maxZoom: 20,
             attribution: 'Map data &copy; <a href="https://www.google.com/maps">Google</a>'
         });
-
         const googleSatelliteLayer = L.tileLayer('https://mt0.googleapis.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
             maxZoom: 20,
             attribution: 'Map data &copy; <a href="https://www.google.com/maps">Google</a>'
         });
-
         const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19,
             attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         });
-
         const oneMapLayer = L.tileLayer('https://www.onemap.gov.sg/maps/tiles/Default_HD/{z}/{x}/{y}.png', {
             maxZoom: 19,
             attribution: 'Map data &copy; <a href="https://www.onemap.gov.sg/" target="_blank">OneMap</a>'
@@ -229,6 +278,53 @@
 
         // Add the default layer to the map
         googleLayer.addTo(map);
+
+        // --- NEW: Image Modal Logic ---
+        const modal = document.getElementById("imageModal");
+        const modalImg = document.getElementById("modalImage");
+        const modalClose = document.getElementById("modalCloseButton");
+
+        // Use event delegation on the map to catch clicks on popup links
+        map.on('popupopen', function() {
+            // Find the link inside the newly opened popup
+            // We use a query selector on the popup container
+            const popupNode = document.querySelector('.leaflet-popup-content');
+            if (!popupNode) return;
+
+            const link = popupNode.querySelector('.popup-full-image-link');
+            if (link) {
+                // We need to clone and replace the node to remove old listeners
+                const newLink = link.cloneNode(true);
+                link.parentNode.replaceChild(newLink, link);
+                
+                newLink.addEventListener('click', function(e) {
+                    e.preventDefault(); // Stop the link's default # action
+                    const imageUrl = e.target.getAttribute('data-full-image-url');
+                    if (imageUrl) {
+                        modalImg.src = imageUrl;
+                        modal.style.display = "flex"; // Show the modal
+                    }
+                });
+            }
+        });
+
+        // Function to close the modal
+        function closeModal() {
+            modal.style.display = "none";
+            modalImg.src = ""; // Clear the image
+        }
+
+        // Close when clicking the 'x'
+        modalClose.onclick = closeModal;
+
+        // Close when clicking the backdrop (outside the image)
+        modal.onclick = function(event) {
+            // Check if the click is on the backdrop itself, not its children (the image)
+            if (event.target === modal) {
+                closeModal();
+            }
+        };
+        // --- End Image Modal Logic ---
 
         // Add a marker to the map for demonstration.
         L.marker([1.313080, 103.773515]).addTo(map)
@@ -267,30 +363,39 @@
             iconAnchor: [14, 28],
             popupAnchor: [0, -28]
         });
-
+        let trafficStatus = "ok"; 
         async function loadTrafficCameras() {
             try {
                 const response = await fetch('https://api.data.gov.sg/v1/transport/traffic-images');
                 if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                 const data = await response.json();
+                if (!data.items || !data.items[0] || !data.items[0].cameras) {
+                    throw new Error("Invalid API data structure");
+                }
                 const cameras = data.items[0].cameras;
-
-                // Clear previous markers to ensure data is fresh
+                if (cameras.length === 0) {
+                    console.warn("Fetched traffic data, but camera list was empty.");
+                    trafficStatus = "empty";
+                    return;
+                }
                 trafficLayer.clearLayers();
-
                 cameras.forEach(camera => {
                     const { location, image, timestamp, camera_id } = camera;
-                    const popupContent = `<div><img src="${image}" alt="Traffic image from camera ${camera_id}"><p><strong>Camera ID:</strong> ${camera_id}<br><strong>Updated:</strong> ${new Date(timestamp).toLocaleString()}</p></div>`;
+                    // MODIFIED: Changed link to a data-attribute link
+                    const popupContent = `<div>
+                                            <img src="${image}" alt="Traffic image from camera ${camera_id}">
+                                            <p><strong>Camera ID:</strong> ${camera_id}<br>
+                                               <strong>Updated:</strong> ${new Date(timestamp).toLocaleString()}
+                                            </p>
+                                            <a href="#" data-full-image-url="${image}" class="popup-full-image-link">View full image</a>
+                                         </div>`;
                     const marker = L.marker([location.latitude, location.longitude], { icon: cameraIcon }).bindPopup(popupContent, { minWidth: 280 });
                     trafficLayer.addLayer(marker);
                 });
-                
-                if (trafficToggle.checked && !map.hasLayer(trafficLayer)) {
-                    map.addLayer(trafficLayer);
-                }
-
+                trafficStatus = "ok";
             } catch (error) {
                 console.error("Could not fetch traffic camera data:", error);
+                trafficStatus = "error";
             }
         }
         trafficToggle.addEventListener('change', () => {
@@ -310,15 +415,19 @@
 
         function updateTimerDisplays() {
             // Decrement and update traffic timer
-            if (trafficCountdown > 0) {
-                trafficCountdown--;
+            if (trafficStatus === "error") {
+                trafficTimerDisplay.textContent = `(Error)`;
+                trafficCountdown = 0;
+            } else if (trafficStatus === "empty") {
+                trafficTimerDisplay.textContent = `(No data)`;
+                trafficCountdown = 0;
+            } else {
+                if (trafficCountdown > 0) trafficCountdown--;
+                trafficTimerDisplay.textContent = `( ${trafficCountdown}s )`;
             }
-            trafficTimerDisplay.textContent = `( ${trafficCountdown}s )`;
 
             // Decrement and update taxi timer
-            if (taxiCountdown > 0) {
-                taxiCountdown--;
-            }
+            if (taxiCountdown > 0) taxiCountdown--;
             taxiTimerDisplay.textContent = `( ${taxiCountdown}s )`;
         }
 
@@ -328,93 +437,71 @@
         
         // Start the 1-second UI updater
         setInterval(updateTimerDisplays, 1000);
-
         // --- End Countdown Timer Logic ---
 
-        // Initial load and setup for auto-refresh
+        // Initial load and setup for auto-refresh (Traffic)
+        if (trafficToggle.checked) map.addLayer(trafficLayer);
         loadTrafficCameras();
-        // MODIFIED: Added countdown reset to the interval
         setInterval(() => {
             loadTrafficCameras();
-            trafficCountdown = TRAFFIC_REFRESH_INTERVAL + 1; // +1 to account for immediate tick
+            trafficCountdown = TRAFFIC_REFRESH_INTERVAL + 1;
         }, TRAFFIC_REFRESH_INTERVAL * 1000); 
 
         // --- Taxi Availability Overlay Logic ---
-        
-        // ** MODIFICATION 1: Use L.markerClusterGroup instead of L.layerGroup **
         const taxiLayer = L.markerClusterGroup({
-            showCoverageOnHover: false, // Disables the cluster bounds on hover
-            spiderfyOnMaxZoom: false, // Prevents "spider-web" effect on click
-            maxClusterRadius: 60, // Group markers in a 60px radius
-            disableClusteringAtZoom: 16, // Show individual taxis when zoomed in
-            
-            // ** MODIFICATION 2: Add iconCreateFunction to style clusters **
+            showCoverageOnHover: false,
+            spiderfyOnMaxZoom: true, // Allow spiderfying for overlapping taxis
+            maxClusterRadius: 60,
+            disableClusteringAtZoom: 16,
             iconCreateFunction: function(cluster) {
                 const count = cluster.getChildCount();
                 let c = ' marker-cluster-';
-                if (count < 100) {
-                    c += 'small';
-                } else if (count < 1000) {
-                    c += 'medium';
-                } else {
-                    c += 'large';
-                }
-
-                // We add our custom 'marker-cluster-taxi' class here.
-                // The default 'marker-cluster' and size classes (small/medium/large)
-                // from MarkerCluster.Default.css will still apply for sizing.
+                if (count < 100) c += 'small';
+                else if (count < 1000) c += 'medium';
+                else c += 'large';
                 return L.divIcon({
                     html: `<div><span>${count}</span></div>`,
                     className: 'marker-cluster marker-cluster-taxi' + c,
-                    iconSize: null // Let default CSS handle sizing
+                    iconSize: null
                 });
             }
         });
         const taxiToggle = document.getElementById('taxiToggle');
-
         async function updateTaxis() {
             try {
                 const response = await fetch('https://api.data.gov.sg/v1/transport/taxi-availability');
                 if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                 const data = await response.json();
-                
-                taxiLayer.clearLayers(); // This works on markerClusterGroup too
-
+                taxiLayer.clearLayers();
                 const coordinates = data.features[0].geometry.coordinates;
                 coordinates.forEach(coord => {
-                    // API gives [longitude, latitude], Leaflet needs [latitude, longitude]
                     L.circleMarker([coord[1], coord[0]], {
                         radius: 4,
-                        fillColor: "#fdd835", // A taxi-yellow color
+                        fillColor: "#fdd835",
                         color: "#333",
                         weight: 1,
                         opacity: 1,
                         fillOpacity: 0.8
-                    }).addTo(taxiLayer); // Add to the markerClusterGroup
+                    }).addTo(taxiLayer);
                 });
             } catch (error) {
                 console.error("Could not fetch taxi availability data:", error);
             }
         }
-
         taxiToggle.addEventListener('change', () => {
              if (taxiToggle.checked) map.addLayer(taxiLayer);
              else map.removeLayer(taxiLayer);
         });
-
-        // Initial load and setup for auto-refresh
+        // Initial load and setup for auto-refresh (Taxis)
         if (taxiToggle.checked) map.addLayer(taxiLayer);
         updateTaxis();
-        // MODIFIED: Added countdown reset to the interval
         setInterval(() => {
             updateTaxis();
-            taxiCountdown = TAXI_REFRESH_INTERVAL + 1; // +1 to account for immediate tick
+            taxiCountdown = TAXI_REFRESH_INTERVAL + 1;
         }, TAXI_REFRESH_INTERVAL * 1000); 
 
         // --- Michelin Restaurant Overlay Logic ---
         const michelinToggle = document.getElementById('michelinToggle');
-        
-        // Define a custom star icon for Michelin restaurants
         const michelinIcon = L.divIcon({
             html: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="26" height="26" style="color: #dc3545; stroke: white; stroke-width: 0.5;">
                         <path d="M12 17.27l-5.18 3.12 1.4-6.03-4.38-3.77 6.06-.52L12 4.5l2.09 5.57 6.06.52-4.38 3.77 1.4 6.03z"/>
@@ -424,22 +511,17 @@
             iconAnchor: [13, 26],
             popupAnchor: [0, -26]
         });
-
-        // Create a cluster group for Michelin, similar to taxis
         const michelinLayer = L.markerClusterGroup({
             showCoverageOnHover: false,
-            spiderfyOnMaxZoom: false,
+            spiderfyOnMaxZoom: true, // Allow spiderfying for same-address restaurants
             maxClusterRadius: 50,
             disableClusteringAtZoom: 17,
-            // Custom cluster icon function
             iconCreateFunction: function(cluster) {
                 const count = cluster.getChildCount();
                 let c = ' marker-cluster-';
                 if (count < 10) c += 'small';
                 else if (count < 100) c += 'medium';
                 else c += 'large';
-                
-                // Add our custom 'marker-cluster-michelin' class
                 return L.divIcon({
                     html: `<div><span>${count}</span></div>`,
                     className: 'marker-cluster marker-cluster-michelin' + c,
@@ -448,368 +530,613 @@
             }
         });
 
-        // FIX: Embed the CSV data directly into a string to bypass
-        // the fetch() error in the sandboxed environment.
-        const michelinCSVData =`Distinction,Restaurant Name,Lat,Long
-Three MICHELIN Stars,Les Amis,1.3066019,103.8314361
-Three MICHELIN Stars,Odette,1.2897067,103.8514433
-Three MICHELIN Stars,Zén,1.2794272,103.8403404
-Two MICHELIN Stars,Cloudstreet,1.2808406,103.8469588
-Two MICHELIN Stars,Jaan by Kirk Westaway,1.2933448,103.85309
-Two MICHELIN Stars,Meta,1.2939004,103.8418116
-Two MICHELIN Stars,Saint Pierre,1.2862514,103.8542577
-Two MICHELIN Stars,Shoukouwa,1.2861235,103.8541527
-Two MICHELIN Stars,Sushi Sakuta,1.2930723,103.8585567
-Two MICHELIN Stars,Thevar,1.2936417,103.8414263
-One MICHELIN Star,Alma,1.308128,103.8341296
-One MICHELIN Star,Araya,1.2787787,103.8420643
-One MICHELIN Star,Born,1.2803733,103.8438899
-One MICHELIN Star,Buona Terra,1.310717,103.834701
-One MICHELIN Star,Burnt Ends,1.304606,103.8089925
-One MICHELIN Star,Candlenut,1.3058022,103.810095
-One MICHELIN Star,Chaleur,1.27922,103.842153
-One MICHELIN Star,CUT,1.2850908,103.8598243
-One MICHELIN Star,Esora,1.2936728,103.8415142
-One MICHELIN Star,Euphoria,1.2774708,103.8441306
-One MICHELIN Star,Hamamoto,1.2779357,103.8442878
-One MICHELIN Star,Hill Street Tai Hwa Pork Noodle,1.3051265,103.8625357
-One MICHELIN Star,Iggy's,1.3060925,103.8292236
-One MICHELIN Star,Imperial Treasure Fine Teochew Cuisine (Orchard),1.3048425,103.8318243
-One MICHELIN Star,Jag,1.2911018,103.8402617
-One MICHELIN Star,Labyrinth,1.2897489,103.8562976
-One MICHELIN Star,Lei Garden,1.2953183,103.8523584
-One MICHELIN Star,Lerouy,1.2939491,103.841848
-One MICHELIN Star,Ma Cuisine,1.2783104,103.8418175
-One MICHELIN Star,Marguerite,1.2848354,103.8641817
-One MICHELIN Star,Nae:um,1.2803318,103.8475438
-One MICHELIN Star,Nouri,1.2802746,103.8466022
-One MICHELIN Star,Omakase @ Stevens,1.3136224,103.8288613
-One MICHELIN Star,Pangium,1.3145033,103.8093295
-One MICHELIN Star,Seroja,1.2996321,103.8583743
-One MICHELIN Star,Shisen Hanten,1.3018688,103.8358989
-One MICHELIN Star,Summer Palace,1.3047183,103.8246565
-One MICHELIN Star,Summer Pavilion,1.2906013,103.8603033
-One MICHELIN Star,Sushi Ichi,1.3049283,103.8331385
-One MICHELIN Star,Waku Ghin,1.2841227,103.8590584
-One MICHELIN Star,Whitegrass,1.2953948,103.8521742
-One MICHELIN Star,Willow,1.2873483,103.8473675
-MICHELIN Green Star,Fiz,1.2796868,103.8440099
-MICHELIN Green Star,Seroja,1.2996321,103.8583743
-Bib Gourmand,A Noodle Story,1.2793453,103.846555
-Bib Gourmand,Adam Rd Noo Cheng Big Prawn Noodle,1.3242218,103.814164
-Bib Gourmand,Alliance Seafood,1.3119859,103.8397289
-Bib Gourmand,Anglo Indian (Shenton Way),1.2791254,103.8502954
-Bib Gourmand,Ar Er Soup,1.2868576,103.8081753
-Bib Gourmand,Bahrakath Mutton Soup,1.3241038,103.8141321
-Bib Gourmand,Beach Road Fish Head Bee Hoon,1.3233389,103.8541373
-Bib Gourmand,Bismillah Biryani (Little India),1.3050455,103.853686
-Bib Gourmand,Boon Tong Kee (Balestier Road),1.3255172,103.8495448
-Bib Gourmand,Chai Chuan Tou Yang Rou Tang,1.2851123,103.8222821
-Bib Gourmand,Chef Kang's Noodle House,1.3371611,103.848865
-Bib Gourmand,Cheok Kee,1.321347,103.8702067
-Bib Gourmand,Chey Sua Carrot Cake,1.3380331,103.844648
-Bib Gourmand,Chuan Kee Boneless Braised Duck,1.3111425,103.7880953
-Bib Gourmand,Cumi Bali,1.2781374,103.844249
-Bib Gourmand,Da Shi Jia Big Prawn Mee,1.2984443,103.8391425
-Bib Gourmand,Delhi Lahori,1.3059209,103.8507309
-Bib Gourmand,Dudu Cooked Food,1.2878588,103.8296379
-Bib Gourmand,Eminent Frog Porridge & Seafood (Lor 19),1.3127383,103.879233
-Bib Gourmand,Fei Fei Roasted • Noodle,1.3435478,103.7375341
-Bib Gourmand,Fico,1.3104435,103.9460923
-Bib Gourmand,Fu Ming Cooked Food,1.2874783,103.8184132
-Bib Gourmand,Hai Nan Xing Zhou Beef Noodle,1.3354401,103.8572761
-Bib Gourmand,Hai Nan Zai,1.4316973,103.8282449
-Bib Gourmand,Han Kee,1.326911,103.933075
-Bib Gourmand,Heng (Heng Kee),1.2851322,103.8458905
-Bib Gourmand,Heng Heng Cooked Food,1.3436866,103.7374342
-Bib Gourmand,Heng Kee,1.2851322,103.8458905
-Bib Gourmand,Hong Heng Fried Sotong Prawn Mee,1.2849359,103.832732
-Bib Gourmand,Hong Kong Yummy Soup,1.2862376,103.8044523
-Bib Gourmand,Hoo Kee Bak Chang,1.2834413,103.8158967
-Bib Gourmand,Hui Wei Chilli Ban Mian,1.3215604,103.8699335
-Bib Gourmand,Indocafé,1.3111111,103.8355556
-Bib Gourmand,J2 Famous Crispy Curry Puff,1.2793332,103.8465844
-Bib Gourmand,Jalan Sultan Prawn Mee,1.311109,103.872773
-Bib Gourmand,Jason Penang Cuisine,1.2869047,103.8081551
-Bib Gourmand,Ji De Lai Hainanese Chicken Rice,1.4316922,103.8281505
-Bib Gourmand,Ji Ji Noodle House,1.2853166,103.8458369
-Bib Gourmand,Jian Bo Tiong Bahru Shui Kueh,1.4403072,103.8012257
-Bib Gourmand,Joo Siah Bak Koot Teh,1.3445713,103.7315622
-Bib Gourmand,Jungle,1.2813885,103.845393
-Bib Gourmand,Kelantan Kway Chap · Pig Organ Soup,1.3073468,103.8567897
-Bib Gourmand,Kitchenman Nasi Lemak,1.3124349,103.8630724
-Bib Gourmand,Koh Brother Pig's Organ Soup,1.2845558,103.832287
-Bib Gourmand,Kok Sen,1.2794333,103.8416097
-Bib Gourmand,Kotuwa,1.2927823,103.8391681
-Bib Gourmand,Kwang Kee Teochew Fish Porridge,1.3118728,103.8398626
-Bib Gourmand,Kwee Heng,1.3118541,103.8397063
-Bib Gourmand,Lagnaa,1.3064483,103.8522415
-Bib Gourmand,Lai Heng Handmade Teochew Kueh,1.3451582,103.7311231
-Bib Gourmand,Lao Fu Zi Fried Kway Teow,1.3080198,103.8856355
-Bib Gourmand,Lian He Ben Ji Claypot,1.2825554,103.8429327
-Bib Gourmand,Lixin Teochew Fishball Noodles,1.3041055,103.831546
-Bib Gourmand,Margaret Drive Sin Kee Chicken Rice,1.3070937,103.7934899
-Bib Gourmand,MP Thai (Vision Exchange),1.3299312,103.7446053
-Bib Gourmand,Muthu's Curry,1.3099202,103.8522443
-Bib Gourmand,Na Na Curry,1.3420717,103.8491142
-Bib Gourmand,Nam Sing Hokkien Fried Mee,1.3082305,103.8855863
-Bib Gourmand,New Lucky Claypot Rice,1.3082997,103.7929826
-Bib Gourmand,No.18 Zion Road Fried Kway Teow,1.2925956,103.8312669
-Bib Gourmand,Outram Park Fried Kway Teow Mee,1.2854065,103.845918
-Bib Gourmand,Ru Ji Kitchen,1.308173,103.7928565
-Bib Gourmand,Selamat Datang Warong Pak Sapari,1.324021,103.814229
-Bib Gourmand,Sik Bao Sin,1.3140535,103.8879353
-Bib Gourmand,Sin Heng Claypot Bak Koot Teh,1.3070632,103.9043627
-Bib Gourmand,Sin Huat Seafood Restaurant,1.3145792,103.8885315
-Bib Gourmand,Singapore Fried Hokkien Mee,1.3231192,103.8548921
-Bib Gourmand,Soh Kee Cooked Food,1.349742,103.718509
-Bib Gourmand,Song Fa Bak Kut Teh (New Bridge Road),1.2852093,103.8447228
-Bib Gourmand,Song Fish Soup,1.3133926,103.7644737
-Bib Gourmand,Song Kee Teochew Fish Porridge,1.3119097,103.8393033
-Bib Gourmand,Soon Huat,1.3072006,103.8523982
-Bib Gourmand,Spinach Soup,1.352083,103.819836
-Bib Gourmand,Tai Seng Fish Soup,1.3109026,103.7879128
-Bib Gourmand,Tai Wah Pork Noodle,1.3071034,103.7933963
-Bib Gourmand,The Blue Ginger,1.2774196,103.8437872
-Bib Gourmand,The Coconut Club (Beach Road),1.3006368,103.8601786
-Bib Gourmand,Tian Tian Hainanese Chicken Rice,1.2804528,103.8447987
-Bib Gourmand,Tiong Bahru Hainanese Boneless Chicken Rice,1.2851888,103.8326424
-Bib Gourmand,To-Ricos Kway Chap,1.3082005,103.8858889
-Bib Gourmand,True Blue Cuisine,1.2945324,103.84935
-Bib Gourmand,Un-Yang-Kor-Dai,1.287117,103.848241
-Bib Gourmand,Whole Earth,1.277244,103.8447081
-Bib Gourmand,Wok Hei Hor Fun,1.287294,103.8181829
-Bib Gourmand,Yhingthai Palace,1.2966831,103.8548295
-Bib Gourmand,Yong Chun Wan Ton Noodle,1.2852423,103.8222931
-Bib Gourmand,Zai Shun Curry Fish Head,1.3435057,103.7371678
-Bib Gourmand,Zhi Wei Xian Zion Road Big Prawn Noodle,1.2924191,103.8310656
-Bib Gourmand,Zhup Zhup,1.3319196,103.8824526
-MICHELIN Selected,545 Whampoa Prawn Noodles,1.3058126,103.8504298
-MICHELIN Selected,91 Fried Kway Teow Mee,1.3030758,103.8639485
-MICHELIN Selected,Ah Heng Duck Rice,1.2851816,103.8457357
-MICHELIN Selected,Ah Hock Fried Hokkien Noodles,1.3641975,103.8666069
-MICHELIN Selected,Ah Ter Authentic Teochew Fish Ball Noodles,1.3728057,103.8544582
-MICHELIN Selected,Allauddin's Briyani,1.3402645,103.8544216
-MICHELIN Selected,Ammãkase,1.284479,103.851082
-MICHELIN Selected,Ann Chin Handmade Popiah,1.3239058,103.8099918
-MICHELIN Selected,Aunty Oats Pancake,1.308232,103.8858505
-MICHELIN Selected,Bar-Roque Grill,1.275521,103.8436042
-MICHELIN Selected,Bedok Chwee Kueh,1.3134024,103.7643697
-MICHELIN Selected,Bhoomi,1.307336,103.8293782
-MICHELIN Selected,Birds Of Paradise (Katong),1.3052488,103.9035674
-MICHELIN Selected,Boon Tong Kee Kway Chap‧Braised Duck,1.2924157,103.8313295
-MICHELIN Selected,Brasserie Astoria,1.288621,103.851462
-MICHELIN Selected,Buko Nero,1.2775877,103.8434931
-MICHELIN Selected,Butcher's Block,1.2955754,103.8540192
-MICHELIN Selected,C.M.Y. Satay,1.282307,103.8429239
-MICHELIN Selected,Ce Soir,1.2943592,103.7959978
-MICHELIN Selected,Cheng Heng Kway Chap and Braised Duck Rice,1.3080463,103.792659
-MICHELIN Selected,Chomp Chomp Satay,1.364188,103.8666239
-MICHELIN Selected,Chung Cheng,1.3054121,103.8915495
-MICHELIN Selected,Claudine,1.3048733,103.8135205
-MICHELIN Selected,Come Daily Fried Hokkien Prawn Mee,1.3380286,103.8446978
-MICHELIN Selected,Da Po,1.3029454,103.8640819
-MICHELIN Selected,Esquina,1.2798595,103.8420714
-MICHELIN Selected,Fatty Ox HK Kitchen,1.2824394,103.8432324
-MICHELIN Selected,Feng Zhen Lor Mee,1.4237323,103.8469891
-MICHELIN Selected,Fiamma,1.2492482,103.8244513
-MICHELIN Selected,Fiz,1.2796868,103.8440099
-MICHELIN Selected,Fleur de Sel,1.2777778,103.8441667
-MICHELIN Selected,Foc (Clarke Quay),1.2906024,103.8464742
-MICHELIN Selected,Food Street Fried Kway Teow Mee,1.2825863,103.8430923
-MICHELIN Selected,Fu He Turtle Soup,1.352083,103.819836
-MICHELIN Selected,Garibaldi,1.2964499,103.8549138
-MICHELIN Selected,Ghim Moh Chwee Kueh,1.3110003,103.7882813
-MICHELIN Selected,Gordon Grill,1.3089104,103.834306
-MICHELIN Selected,Gunther's,1.2966208,103.8549145
-MICHELIN Selected,Heng Gi Goose and Duck Rice,1.305701,103.8506053
-MICHELIN Selected,Heng Long BBQ Chicken Rice,1.2931196,103.8028492
-MICHELIN Selected,Hill Street Fried Kway Teow,1.3204391,103.9353699
-MICHELIN Selected,Hock Hai (Hong Lim) Curry Chicken Noodle,1.324569,103.93068
-MICHELIN Selected,Hock Seng Choon Fish Ball Kway Teow Mee,1.3203366,103.9351963
-MICHELIN Selected,Hoe Kee Kitchen,1.3499698,103.7184099
-MICHELIN Selected,Hokkien Man Hokkien Mee,1.335531,103.8564778
-MICHELIN Selected,Hokkien Street Bak Kut Teh,1.285302,103.8457252
-MICHELIN Selected,Hong Peng La Mian Xiao Long Bao,1.284581,103.8422866
-MICHELIN Selected,Hong Wen Mutton Soup,1.3424297,103.7763727
-MICHELIN Selected,Hougang Traditional Famous Wanton Noodle,1.3080812,103.8853106
-MICHELIN Selected,Hua Xing Bak Kut Teh,1.3451001,103.7311945
-MICHELIN Selected,Huat Heng Fried Oyster,1.3230663,103.8550176
-MICHELIN Selected,Hup Hong Chicken Rice,1.3433995,103.7376504
-MICHELIN Selected,Hup Kee Teochew Fishball Mee,1.2932672,103.8028827
-MICHELIN Selected,Ibid,1.2864337,103.8483365
-MICHELIN Selected,Ichigo Ichie,1.3075063,103.8289979
-MICHELIN Selected,Imperial Treasure Super Peking Duck (Paragon),1.3034034,103.835489
-MICHELIN Selected,Iru Den,1.3104872,103.8342713
-MICHELIN Selected,Ishizawa,1.2951636,103.8535113
-MICHELIN Selected,Ivy's Hainanese Herbal Mutton Soup,1.2759677,103.7913379
-MICHELIN Selected,Jade Palace,1.3059609,103.8285176
-MICHELIN Selected,Jian Bo Shui Kueh,1.2849131,103.8325965
-MICHELIN Selected,Jiang-Nan Chun,1.3052848,103.8287235
-MICHELIN Selected,Jiao Cai Seafood,1.4251127,103.8446234
-MICHELIN Selected,Jin Hua,1.3083547,103.8860871
-MICHELIN Selected,Kang Le Fishball Noodles,1.3499318,103.7183585
-MICHELIN Selected,Kang's Wanton Noodle,1.2924504,103.831136
-MICHELIN Selected,Keng Eng Kee (Bukit Merah),1.2857843,103.8037037
-MICHELIN Selected,Ki Su,1.2778923,103.8442296
-MICHELIN Selected,Koka Wanton Noodles,1.3057161,103.8636504
-MICHELIN Selected,L'Antica Pizzeria da Michele,1.2826167,103.8464189
-MICHELIN Selected,La D'Oro,1.3020467,103.8366318
-MICHELIN Selected,Lao Jie Fang,1.2850174,103.8425811
-MICHELIN Selected,Latido,1.278343,103.8443332
-MICHELIN Selected,Leon Kee Claypot Pork Rib Soup,1.2863873,103.8047273
-MICHELIN Selected,Lolla,1.2809785,103.845602
-MICHELIN Selected,Long Kee Wanton Noodle,1.3497487,103.7185122
-MICHELIN Selected,Loong Kee Yong Tau Fu,1.3499609,103.7183841
-MICHELIN Selected,Lor 9 Beef Kway Teow,1.3122058,103.8766747
-MICHELIN Selected,Lor Mee 178,1.2846081,103.8323608
-MICHELIN Selected,Luke's,1.282187,103.847226
-MICHELIN Selected,Maison Boulud,1.2833222,103.8582792
-MICHELIN Selected,Majestic,1.2847423,103.8432282
-MICHELIN Selected,Maxwell Fuzhou Oyster Cake,1.280559,103.8446188
-MICHELIN Selected,Mellben Seafood (Ang Mo Kio),1.3686044,103.836948
-MICHELIN Selected,Min Jiang at Dempsey,1.3046255,103.808144
-MICHELIN Selected,Mustard,1.3079408,103.850663
-MICHELIN Selected,Mustard Seed,1.3628502,103.8712471
-MICHELIN Selected,Na Oh,1.3528249,103.7117347
-MICHELIN Selected,Nasi Lemak Ayam Taliwang,1.3007111,103.844904
-MICHELIN Selected,National Kitchen,1.2906056,103.8519111
-MICHELIN Selected,New World Mutton Soup,1.3250299,103.9304702
-MICHELIN Selected,Nómada,1.2790659,103.8413895
-MICHELIN Selected,Nyonya Chendol,1.3229833,103.8549844
-MICHELIN Selected,Olivia,1.2806358,103.8415896
-MICHELIN Selected,Open Farm Community,1.3058298,103.8155908
-MICHELIN Selected,Osteria Mozza,1.302036,103.8358858
-MICHELIN Selected,Path,1.352083,103.819836
-MICHELIN Selected,People's Park Hainanese Chicken Rice,1.352083,103.819836
-MICHELIN Selected,Podi & Poriyal,1.313845,103.8572848
-MICHELIN Selected,Poh Cheu (KPT Coffee Shop),1.2853962,103.8034259
-MICHELIN Selected,Pondok Makan Indonesia,1.3012845,103.8538526
-MICHELIN Selected,Putien (Kitchener Road),1.309551,103.8573328
-MICHELIN Selected,Quenino,1.305764,103.827012
-MICHELIN Selected,R&B Express,1.312165,103.839664
-MICHELIN Selected,Redhill Pork Porridge,1.2873244,103.8181052
-MICHELIN Selected,Rempapa,1.3166118,103.8929568
-MICHELIN Selected,Revolver,1.2779485,103.8442501
-MICHELIN Selected,Rojak‧Popiah & Cockle,1.2805328,103.8447782
-MICHELIN Selected,San Shu Gong (Geylang),1.3111411,103.8739799
-MICHELIN Selected,San Xiang Rou Cuo Mian,1.3319478,103.9384566
-MICHELIN Selected,Shang Palace,1.3111368,103.8265902
-MICHELIN Selected,Shanyuan Teochew Kway Teow Mian,1.3190803,103.8632879
-MICHELIN Selected,Sheng Seng Fried Prawn Noodle,1.3160852,103.8500003
-MICHELIN Selected,Shi Le Yuan,1.2874028,103.8182751
-MICHELIN Selected,Shunsui,1.2877813,103.8473384
-MICHELIN Selected,Sin Hoi Sai (Tiong Bahru),1.2846559,103.8339491
-MICHELIN Selected,Singapore Famous Rojak,1.3008347,103.8543398
-MICHELIN Selected,Solo,1.2804262,103.8468933
-MICHELIN Selected,Somma,1.2929272,103.8386723
-MICHELIN Selected,Sospiri,1.2798851,103.8514962
-MICHELIN Selected,Spago Dining Room,1.2833034,103.8605846
-MICHELIN Selected,Springleaf Prata Place (Spring Leaf Garden),1.3970326,103.8188156
-MICHELIN Selected,Straits Chinese (Cecil Street),1.2802561,103.8489721
-MICHELIN Selected,Sugarra,1.2553119,103.820203
-MICHELIN Selected,Sushi Hare,1.280357,103.8480142
-MICHELIN Selected,Sushi Katori,1.279515,103.8440103
-MICHELIN Selected,Sushi Masaaki,1.2938023,103.8554594
-MICHELIN Selected,Sushi Ryujiro,1.3066668,103.8312606
-MICHELIN Selected,Sushi Sato,1.30492,103.8084376
-MICHELIN Selected,Sushi Yuki,1.2798493,103.8430536
-MICHELIN Selected,Tambuah Mas (Orchard),1.3036434,103.8349946
-MICHELIN Selected,Terra,1.2779828,103.8441779
-MICHELIN Selected,The 1950's Coffee,1.2822882,103.8432964
-MICHELIN Selected,The Prince,1.2779306,103.844885
-MICHELIN Selected,Tien Lai Rice Stall,1.3346225,103.7214661
-MICHELIN Selected,Tiong Bahru Lien Fa Shui Jing Pau,1.286197,103.8045354
-MICHELIN Selected,Toa Payoh 93 Soon Kueh,1.3214913,103.8700885
-MICHELIN Selected,Torno Subito,1.3058919,103.8113481
-MICHELIN Selected,Tow Kwar Pop,1.2848203,103.8326729
-MICHELIN Selected,Traditional Hakka Lui Cha,1.3495891,103.7183187
-MICHELIN Selected,Tunglok Heen,1.2550122,103.8201681
-MICHELIN Selected,Unforgettable Carrot Cake,1.2844288,103.8221831
-MICHELIN Selected,Ushidoki Wagyu Kaiseki,1.2779071,103.8445116
-MICHELIN Selected,Vue,1.2830712,103.853012
-MICHELIN Selected,Wah Lok,1.2959685,103.852255
-MICHELIN Selected,Wakuda,1.2837271,103.8607884
-MICHELIN Selected,Whampoa Soya Bean & Grass Jelly Drinks,1.323168,103.8542694
-MICHELIN Selected,Xing Yun Hainanese Boneless Chicken Rice,1.3450807,103.7310759
-MICHELIN Selected,Yan Ting,1.3054244,103.8261546
-MICHELIN Selected,Ye Tang,1.3423905,103.776256
-MICHELIN Selected,Yì By Jereme Leung,1.2955861,103.8540165
-MICHELIN Selected,Yong Fu,1.2955328,103.8580569
-MICHELIN Selected,Yong Kee Claypot Bak Kut Teh,1.334832,103.7214561
-MICHELIN Selected,Yong Xiang Xing Tou Fu,1.2852356,103.8428428
-MICHELIN Selected,Zhang Ji Shanghai La Mian Xiao Long Bao,1.2862951,103.804442
-MICHELIN Selected,Zheng Zhi Wen Ji Pig's Organ Soup,1.313495,103.7644081
-MICHELIN Selected,Zi Jing Cheng Hainanese Boneless Chicken Rice,1.2862985,103.8045942
-`;
+        /* ===============================================================
+        PASTE YOUR "Michelin Guide 2025 - Sheet1.csv" DATA INSIDE
+        THE BACKTICKS (`) BELOW.
+        I've added 5 samples for you.
+        ===============================================================
+        */
+        const michelinCSVData = `Category,Name,URL,Address,"Lat, Long"
+Three-MICHELIN-Starred ,Les Amis,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/les-amis,"Shaw Centre, #01-16, 1 Scotts Road, 228208, Singapore","1.306246, 103.83172"
+Three-MICHELIN-Starred ,Odette,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/odette,"National Gallery, #01-04, 1 St. Andrew's Road (entrance via Supreme Court wing's foyer), 178957, Singapore","1.2897045, 103.8512862"
+Three-MICHELIN-Starred ,Zén,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/zen,"41 Bukit Pasoh Road, 089855, Singapore","1.2794108, 103.8403697"
+Two-MICHELIN-Starred ,Cloudstreet,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/cloudstreet,"84 Amoy Street, 069903, Singapore","1.2808421, 103.8469562"
+Two-MICHELIN-Starred ,Jaan by Kirk Westaway,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/jaan-by-kirk-westaway,"Swissôtel The Stamford, Equinox Complex, Level 70, 2 Stamford Road, 178882, Singapore","1.2936866, 103.8533912"
+Two-MICHELIN-Starred ,Meta,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/meta-570540,"9 Mohamed Sultan Road, 238959, Singapore","1.2939004, 103.8418116"
+Two-MICHELIN-Starred ,Saint Pierre,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/saint-pierre,"One Fullerton, #02-02B, 1 Fullerton Road, 049213, Singapore","1.2860884, 103.8540571"
+Two-MICHELIN-Starred ,Shoukouwa,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/shoukouwa,"One Fullerton, #02-02A, 1 Fullerton Road, 049213, Singapore","1.2860884, 103.8540571"
+Two-MICHELIN-Starred ,Sushi Sakuta,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/sushi-sakuta,"The Capitol Kempinski Hotel, #01-88, 15 Stamford Road, 178906, Singapore","1.293717, 103.851596"
+Two-MICHELIN-Starred ,Thevar,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/thevar,"16 Mohamed Sultan Road, 238965, Singapore","1.2936417, 103.8414263"
+One-MICHELIN-Starred ,Araya,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/araya,"Mondrian Duxton, #01-08, 83 Neil Road, 089813, Singapore","1.2789527, 103.8419489"
+One-MICHELIN-Starred ,Born,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/born,"#01-01, 1 Neil Road, 088804, Singapore","1.2801119, 103.8438899"
+One-MICHELIN-Starred ,Buona Terra,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/buona-terra,"29 Scotts Road, 228224, Singapore","1.3106921, 103.8346183"
+One-MICHELIN-Starred ,Burnt Ends,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/burnt-ends-1200777,"#01-04, 7 Dempsey Road, 249671, Singapore","1.3046218, 103.8089078"
+One-MICHELIN-Starred ,Candlenut,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/candlenut,"17A Dempsey Road, 249676, Singapore","1.3058022, 103.810095"
+One-MICHELIN-Starred ,Chaleur,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/chaleur,"Level 2, 77 Neil Road, 088903, Singapore","1.2792229, 103.8421461"
+One-MICHELIN-Starred ,CUT,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/cut,"The Shoppes at Marina Bay Sands, Galleria Level, #B1-71, 10 Bayfront Avenue, 018972, Singapore","1.2837126, 103.8591767"
+One-MICHELIN-Starred ,Esora,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/esora,"15 Mohamed Sultan Road, 238964, Singapore","1.2936054, 103.8415679"
+One-MICHELIN-Starred ,Hamamoto,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/hamamoto,"58 Tras Street, 078997, Singapore","1.2779334, 103.8442456"
+One-MICHELIN-Starred ,Hill Street Tai Hwa Pork Noodle,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/hill-street-tai-hwa-pork-noodle,"Blk 466, #01-12, Crawford Lane, 190466, Singapore","1.3051265, 103.8625357"
+One-MICHELIN-Starred ,Iggy's,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/iggy-s,"voco Orchard, Level 3, 581 Orchard Road, 238883, Singapore","1.3060744, 103.8293006"
+One-MICHELIN-Starred ,Imperial Treasure Fine Teochew Cuisine (Orchard),https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/imperial-treasure-fine-teochew-cuisine-orchard,"ION Orchard, #03-05, 2 Orchard Turn, 238801, Singapore","1.3040318, 103.8329628"
+One-MICHELIN-Starred ,Jag,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/jag,"Singapore Tyler Print Institute, #02-02, 41 Robertson Quay, 238236, Singapore","1.2909583, 103.8402186"
+One-MICHELIN-Starred ,Labyrinth,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/labyrinth,"Esplanade Mall, #02-23, Marina Bay Promenade, 8 Raffles Avenue, 039802, Singapore","1.28976, 103.8560406"
+One-MICHELIN-Starred ,Lei Garden,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/lei-garden-501509,"Chijmes, #01-24, 30 Victoria Street, 187996, Singapore","1.2953183, 103.8523584"
+One-MICHELIN-Starred ,Lerouy,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/lerouy-1195638,"7 Mohamed Sultan Road, 238957, Singapore","1.2939491, 103.841848"
+One-MICHELIN-Starred ,Ma Cuisine,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/ma-cuisine,"38 Craig Road, 089676, Singapore","1.2782288, 103.8418095"
+One-MICHELIN-Starred ,Marguerite,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/marguerite,"Flower Dome, #01-09, Gardens by The Bay, 18 Marina Gardens Drive, 018953, Singapore","1.2846292, 103.8646975"
+One-MICHELIN-Starred ,Nae:um,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/nae-um,"161 Telok Ayer Street, 068615, Singapore","1.280315, 103.8475221"
+One-MICHELIN-Starred ,Nouri,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/nouri,"72 Amoy Street, 069891, Singapore","1.2802809, 103.8466094"
+One-MICHELIN-Starred ,Omakase @ Stevens,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/omakase-stevens,"#01-03, 30 Stevens Road, 257840, Singapore","1.3136094, 103.8288862"
+One-MICHELIN-Starred ,Pangium,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/pangium,"Gallop Entrance, Singapore Botanic Gardens, 11 Gallop Road, 259015, Singapore","1.3145033, 103.8093295"
+One-MICHELIN-Starred ,Seroja,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/seroja,"Duo Galleria, #01-30/31/32/33, 7 Fraser Street, 189356, Singapore","1.2996321, 103.8583743"
+One-MICHELIN-Starred ,Shisen Hanten,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/shisen-hanten,"Hilton Orchard, Level 35, 333 Orchard Road, 238867, Singapore","1.3019551, 103.8366272"
+One-MICHELIN-Starred ,Summer Palace,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/summer-palace-501658,"Conrad Orchard, Level 3, 1 Cuscaden Road, 249715, Singapore","1.3048184, 103.8252419"
+One-MICHELIN-Starred ,Summer Pavilion,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/summer-pavillion,"The Ritz-Carlton, Millenia, Level 3, 7 Raffles Avenue, 039799, Singapore","1.2909392, 103.8599895"
+One-MICHELIN-Starred ,Sushi Ichi,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/sushi-ichi,"Marriott Tang Plaza Hotel, #01-04, 320 Orchard Road, 238865, Singapore","1.3052151, 103.8329675"
+One-MICHELIN-Starred ,Waku Ghin,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/waku-ghin,"The Shoppes at Marina Bay Sands, Level 2 Dining, L2-03, 10 Bayfront Avenue, 018956, Singapore","1.2836889, 103.8591846"
+One-MICHELIN-Starred ,Whitegrass,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/whitegrass,"Chijmes, #01-26/27, 30 Victoria Street, 187996, Singapore","1.2954469, 103.8520424"
+One-MICHELIN-Starred ,Willow,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/willow,"39 HongKong Street, 059678, Singapore","1.2873483, 103.8473675"
+Bib Gourmand ,A Noodle Story,https://guide.michelin.com/th/en/singapore-region/singapore/restaurant/a-noodle-story,"Amoy Street Food Centre, #01-39, 7 Maxwell Road, 069111, Singapore","1.2794274, 103.8467957"
+Bib Gourmand ,Adam Rd Noo Cheng Big Prawn Noodle,https://guide.michelin.com/th/en/singapore-region/singapore/restaurant/adam-rd-noo-cheng-big-prawn-noodle,"Adam Food Centre, #01-27, 2 Adam Road, 289876, Singapore","1.3240414, 103.8141545"
+Bib Gourmand ,Alliance Seafood,https://guide.michelin.com/th/en/singapore-region/singapore/restaurant/alliance-seafood,"Newton Food Centre, #01-27, 500 Clemenceau Avenue North, 229495, Singapore","1.3121155, 103.839389"
+Bib Gourmand ,Anglo Indian (Shenton Way),https://guide.michelin.com/th/en/singapore-region/singapore/restaurant/anglo-indian-shenton-way,"#01-08, 1 Shenton Way, 068803, Singapore","1.2791254, 103.8502954"
+Bib Gourmand ,Ar Er Soup,https://guide.michelin.com/th/en/singapore-region/singapore/restaurant/ar-er-soup,"ABC Brickworks Market & Food Centre, #01-141, Blk 6 Jalan Bukit Merah, 150006, Singapore","1.2869047, 103.8081551"
+Bib Gourmand ,Bahrakath Mutton Soup,https://guide.michelin.com/th/en/singapore-region/singapore/restaurant/bahrakath-mutton-soup,"Adam Food Centre, #01-10, 2 Adam Road, 289876, Singapore","1.3240414, 103.8141545"
+Bib Gourmand ,Beach Road Fish Head Bee Hoon,https://guide.michelin.com/th/en/singapore-region/singapore/restaurant/beach-road-fish-head-bee-hoon,"Whampoa Makan Place, #01-46, 90/91 Whampoa Drive 91, 320091, Singapore","1.3229833, 103.8549844"
+Bib Gourmand ,Bismillah Biryani (Little India),https://guide.michelin.com/th/en/singapore-region/singapore/restaurant/bismillah-biryani,"50 Dunlop Street, 209379, Singapore","1.3050693, 103.853734"
+Bib Gourmand ,Boon Tong Kee (Balestier Road),https://guide.michelin.com/th/en/singapore-region/singapore/restaurant/boon-tong-kee-balestier-road,"399, 401, 403 Balestier Road, 329801, Singapore","1.325578, 103.8490735"
+Bib Gourmand ,Chai Chuan Tou Yang Rou Tang,https://guide.michelin.com/th/en/singapore-region/singapore/restaurant/chai-chuan-tou-yang-rou-tang,"115 Bukit Merah View Market & Hawker Centre, #01-51, Blk 115 Bukit Merah View, 151115, Singapore","1.2854726, 103.822269"
+Bib Gourmand ,Chef Kang’s Noodle House,https://guide.michelin.com/th/en/singapore-region/singapore/restaurant/chef-kang-s-noodle-house,"Blk C, #01-34, Jackson Square, 11 Lorong 3 Toa Payoh, 319579, Singapore","1.3371344, 103.8489102"
+Bib Gourmand ,Cheok Kee,https://guide.michelin.com/th/en/singapore-region/singapore/restaurant/cheok-kee,"Geylang Bahru Market & Food Centre, #01-35, 69 Geylang Bahru, 330069, Singapore","1.3214913, 103.8700885"
+Bib Gourmand ,Chey Sua Carrot Cake,https://guide.michelin.com/th/en/singapore-region/singapore/restaurant/chey-sua-carrot-cake,"127 Toa Payoh West Market & Food Centre, #02-30, Blk 127, Lorong 1 Toa Payoh, 310127, Singapore","1.3381303, 103.8447281"
+Bib Gourmand ,Chuan Kee Boneless Braised Duck,https://guide.michelin.com/th/en/singapore-region/singapore/restaurant/chuan-kee-boneless-braised-duck,"20 Ghim Moh Road Market & Food Centre, #01-04, Blk 20, Ghim Moh Road, 270020, Singapore","1.3109708, 103.7883085"
+Bib Gourmand ,Cumi Bali,https://guide.michelin.com/th/en/singapore-region/singapore/restaurant/cumi-bali,"50 Tras Street, 078989, Singapore","1.2781374, 103.844249"
+Bib Gourmand ,Da Shi Jia Big Prawn Mee,https://guide.michelin.com/th/en/singapore-region/singapore/restaurant/da-shi-jia,"89 Killiney Road, 239534, Singapore","1.2984443, 103.8391425"
+Bib Gourmand ,Delhi Lahori,https://guide.michelin.com/th/en/singapore-region/singapore/restaurant/delhi-lahori,"Tekka Centre, #01-266, 665 Buffalo Road, 210665, Singapore","1.3063839, 103.8507014"
+Bib Gourmand ,Dudu Cooked Food,https://guide.michelin.com/th/en/singapore-region/singapore/restaurant/du-du-shou-shi,"Jurong West 505 Market & Food Centre, #01-19, Blk 505, Jurong West Street 52, 640505, Singapore","1.3498107, 103.7185004"
+Bib Gourmand ,Eminent Frog Porridge & Seafood (Lor 19),https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/eminent-frog-porridge-seafood-lor-19,"Geylang Lorong 19, 323 Geylang Road, 389359, Singapore","1.3127872, 103.8792634"
+Bib Gourmand ,Fei Fei Roasted • Noodle,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/fei-fei-roasted-%E2%80%A2-noodle,"Yuhua Village Market and Food Centre, #01-28, Blk 254, Jurong East Street 24, 600254, Singapore","1.3437065, 103.7378006"
+Bib Gourmand ,Fico,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/fico-1213088,"1300 East Coast Parkway, 468964, Singapore","1.3052353, 103.9234317"
+Bib Gourmand ,Fu Ming Cooked Food,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/fu-ming-cooked-food,"Redhill Market, #01-49, 85 Redhill Lane, 150085, Singapore","1.2874783, 103.8184132"
+Bib Gourmand ,Hai Nan Xing Zhou Beef Noodle,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/hai-nan-xing-zhou-beef-noodle,"Kim Keat Palm Market & Food Centre, #01-06, 22 Lorong 7 Toa Payoh, 310022, Singapore","1.335365, 103.8569972"
+Bib Gourmand ,Hai Nan Zai,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/hainan-zi,"Chong Pang Market and Food Centre, #01-129, 105 Yishun Ring Road, 760105, Singapore","1.4316916, 103.8281085"
+Bib Gourmand ,Han Kee,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/han-kee,"Amoy Street Food Centre, #02-129, 7 Maxwell Road, 069111, Singapore","1.2794274, 103.8467957"
+Bib Gourmand ,Heng,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/heng,"Newton Food Centre, #01-28, 500 Clemenceau Avenue North, 229495, Singapore","1.3121155, 103.839389"
+Bib Gourmand ,Heng Heng Cooked Food,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/heng-heng-cooked-food,"Yuhua Village Market and Food Centre, #01-12, Blk 254, Jurong East Street 24, 600254, Singapore","1.3437065, 103.7378006"
+Bib Gourmand ,Heng Kee,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/heng-kee,"Hong Lim Market and Food Centre, #01-58, Blk 531A, Upper Cross Street, 051531, Singapore","1.2853948, 103.8458272"
+Bib Gourmand ,Hong Heng Fried Sotong Prawn Mee,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/hong-heng-fried-sotong-prawn-mee,"Tiong Bahru Market, #02-01, 30 Seng Poh Road, 168898, Singapore","1.2850771, 103.8328072"
+Bib Gourmand ,Hong Kong Yummy Soup,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/hong-kong-yummy-soup,"Alexandra Village Food Centre, #01-51, Blk 120 Bukit Merah Lane 1, 150120, Singapore","1.2863397, 103.8045184"
+Bib Gourmand ,Hoo Kee Bak Chang,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/hoo-kee-rice-dumpling,"Amoy Street Food Centre, #01-18, 7 Maxwell Road, 069111, Singapore","1.2794274, 103.8467957"
+Bib Gourmand ,Hui Wei Chilli Ban Mian,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/hui-wei-chilli-ban-mian,"Geylang Bahru Market & Food Centre, #01-58, 69 Geylang Bahru, 330069, Singapore","1.3214913, 103.8700885"
+Bib Gourmand ,Indocafé,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/indocafe-the-white-house,"35 Scotts Road, 228227, Singapore","1.3111032, 103.8355554"
+Bib Gourmand ,J2 Famous Crispy Curry Puff,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/j2-famous-crispy-curry-puff,"Amoy Street Food Centre, #01-21, 7 Maxwell Road, 069111, Singapore","1.2794274, 103.8467957"
+Bib Gourmand ,Jalan Sultan Prawn Mee,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/jalan-sultan-prawn-mee,"2 Jalan Ayer, Lorong 1 Geylang, 389141, Singapore","1.3110921, 103.8727934"
+Bib Gourmand ,Jason Penang Cuisine,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/jason-penang-cuisine,"ABC Brickworks Market & Food Centre, #01-112, Blk 6 Jalan Bukit Merah, 150006, Singapore","1.2869047, 103.8081551"
+Bib Gourmand ,Ji De Lai Hainanese Chicken Rice,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/ji-de-lai-hainanese-chicken-rice,"Chong Pang Market and Food Centre, #01-152, 105 Yishun Ring Road, 760105, Singapore","1.4316916, 103.8281085"
+Bib Gourmand ,Ji Ji Noodle House,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/ji-ji-noodle-house,"Hong Lim Market and Food Centre, #02-48/49, Blk 531A, Upper Cross Street, 051531, Singapore","1.2853948, 103.8458272"
+Bib Gourmand ,Jian Bo Tiong Bahru Shui Kueh,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/jian-bo-tiong-bahru-shui-kueh,"Jurong West 505 Market & Food Centre, #01-27, Blk 505, Jurong West Street 52, 640505, Singapore","1.3498107, 103.7185004"
+Bib Gourmand ,Joo Siah Bak Koot Teh,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/joo-siah-bak-koot-teh,"Blk 349, #01-1215 Jurong East Avenue 1, 600349, Singapore","1.3443161, 103.7314279"
+Bib Gourmand ,Jungle,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/jungle,"10 Ann Siang Hill, 069789, Singapore","1.2814264, 103.8454862"
+Bib Gourmand ,Kelantan Kway Chap · Pig Organ Soup,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/kelantan-kway-chap-pig-organ-soup,"Berseh Food Centre, #02-39, 166 Jalan Besar, 208877, Singapore","1.3073539, 103.8567494"
+Bib Gourmand ,Kitchenman Nasi Lemak,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/kitchenman-nasi-lemak,"CT Hub, #01-08/13, 2 Kallang Avenue, 339407, Singapore","1.3126932, 103.8627401"
+Bib Gourmand ,Koh Brother Pig's Organ Soup,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/koh-brother-pig-s-organ-soup,"Tiong Bahru Market, #02-29, 30 Seng Poh Road, 168898, Singapore","1.2850771, 103.8328072"
+Bib Gourmand ,Kok Sen,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/kok-sen,"2/4 Keong Saik Road, 089112, Singapore","1.2808818, 103.8417401"
+Bib Gourmand ,Kotuwa,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/kotuwa,"New Bahru, #01-03, 46 Kim Yam Road, 239351, Singapore","1.2928106, 103.8386992"
+Bib Gourmand ,Kwang Kee Teochew Fish Porridge,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/kwang-kee-teochew-fish-porridge,"Newton Food Centre, #01-20, 500 Clemenceau Avenue North, 229495, Singapore","1.3121155, 103.839389"
+Bib Gourmand ,Kwee Heng,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/kwee-heng,"Newton Food Centre, #01-13, 500 Clemenceau Avenue North, 229495, Singapore","1.3121155, 103.839389"
+Bib Gourmand ,Lagnaa,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/lagnaa,"6 Upper Dickson Road, 207466, Singapore","1.3064162, 103.8523008"
+Bib Gourmand ,Lai Heng Handmade Teochew Kueh,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/lai-heng-handmade-teochew-kueh,"Yuhua Market & Hawker Centre, #01-218, Blk 347, Jurong East Avenue 1, Jurong East, 600347, Singapore","1.3450836, 103.7313403"
+Bib Gourmand ,Lao Fu Zi Fried Kway Teow,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/lao-fu-zi-fried-kway-teow,"51 Old Airport Road Food Centre, #01-12, 51 Old Airport Road, 390051, Singapore","1.3082405, 103.8858445"
+Bib Gourmand ,Lian He Ben Ji Claypot,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/lian-he-ben-ji-claypot,"Chinatown Complex Market & Food Centre, #02-198/199, 335 Smith Street, 050335, Singapore","1.2825554, 103.8429327"
+Bib Gourmand ,Lixin Teochew Fishball Noodles,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/lixin-teochew-fishball-noodles,"Kim Keat Palm Market & Food Centre, #01-20, Blk 19 Toa Payoh Lor 7, 310019, Singapore","1.335365, 103.8569972"
+Bib Gourmand ,Margaret Drive Sin Kee Chicken Rice,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/margaret-drive-sin-kee-chicken-rice,"Block 40, Stall 5, #01-39, Holland Drive, 270040, Singapore","1.308886, 103.7930474"
+Bib Gourmand ,MP Thai (Vision Exchange),https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/mp-thai,"Vision Exchange, #02-41/42, 2 Venture Drive, 608526, Singapore","1.3302428, 103.7447433"
+Bib Gourmand ,Muthu's Curry,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/muthu-s-curry-little-india,"#01-01, 138 Race Course Road, 218591, Singapore","1.3100436, 103.8522035"
+Bib Gourmand ,Na Na Curry,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/na-na-curry,"115 Bukit Merah View Market & Hawker Centre, #01-47, Blk 115 Bukit Merah View, 151115, Singapore","1.2854726, 103.822269"
+Bib Gourmand ,Nam Sing Hokkien Fried Mee,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/nam-sing-hokkien-fried-mee,"51 Old Airport Road Food Centre, #01-32, 51 Old Airport Road, 390051, Singapore","1.3082405, 103.8858445"
+Bib Gourmand ,New Lucky Claypot Rice,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/new-lucky-claypot-rice,"Holland Drive Market & Food Centre, #02-19, 44 Holland Drive, 270044, Singapore","1.308167, 103.7927992"
+Bib Gourmand ,No.18 Zion Road Fried Kway Teow,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/no-18-zion-road-fried-kway-teow,"Zion Riverside Food Centre, #017, 70 Zion Road, 247792, Singapore","1.2924675, 103.8313302"
+Bib Gourmand ,Outram Park Fried Kway Teow Mee,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/outram-park-fried-kway-teow,"Hong Lim Market and Food Centre, #02-17, Blk 531A, Upper Cross Street, 051531, Singapore","1.2853948, 103.8458272"
+Bib Gourmand ,Ru Ji Kitchen,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/ru-ji-kitchen,"Holland Drive Market & Food Centre, #02-28/29, 44 Holland Drive, 270044, Singapore","1.308167, 103.7927992"
+Bib Gourmand ,Selamat Datang Warong Pak Sapari,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/selamat-datang-warong-pak-sapari,"Adam Food Centre, #01-09 , 2 Adam Road, 289876, Singapore","1.3240414, 103.8141545"
+Bib Gourmand ,Sik Bao Sin,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/sik-bao-sin-desmond-s-creation,"592 Geylang Road, 389531, Singapore","1.3140535, 103.8879353"
+Bib Gourmand ,Sin Heng Claypot Bak Koot Teh,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/sin-heng-claypot-bak-koot-teh,"#01-01, 439 Joo Chiat Road, 427652, Singapore","1.3070632, 103.9043627"
+Bib Gourmand ,Sin Huat Seafood Restaurant,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/sin-huat-eating-house,"659/661 Lorong 35 Geylang, 389589, Singapore","1.3152318, 103.8885148"
+Bib Gourmand ,Singapore Fried Hokkien Mee,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/singapore-fried-hokkien-mee,"Whampoa Makan Place, #01-32, 90/91 Whampoa Drive 91, 320091, Singapore","1.3229833, 103.8549844"
+Bib Gourmand ,Soh Kee Cooked Food,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/soh-kee-cooked-food,"Jurong West 505 Market & Food Centre, #01-44, Blk 505, Jurong West Street 52, 640505, Singapore","1.3498107, 103.7185004"
+Bib Gourmand ,Song Fa Bak Kut Teh (New Bridge Road),https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/song-fa-bak-kut-teh-new-bridge-road,"#01-01, 11 New Bridge Road, 059386, Singapore","1.2890132, 103.8477222"
+Bib Gourmand ,Song Fish Soup,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/song-fish-soup,"Clementi 448 Food Centre, #01-38, 448 Clementi Ave 3, 120448, Singapore","1.3134126, 103.7645571"
+Bib Gourmand ,Song Kee Teochew Fish Porridge,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/song-kee-teochew-fish-porridge,"Newton Food Centre, #01-37, 500 Clemenceau Avenue North, 229495, Singapore","1.3121155, 103.839389"
+Bib Gourmand ,Soon Huat,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/soon-huat,"North Bridge Road Market & Food Centre, #01-105, 861 North Bridge Road, 198783, Singapore","1.3058333, 103.8638889"
+Bib Gourmand ,Spinach Soup,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/spinach-soup,"Geylang Bahru Market & Food Centre, #01-12, 69 Geylang Bahru, 330069, Singapore","1.3214913, 103.8700885"
+Bib Gourmand ,Tai Seng Fish Soup,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/tai-seng-fish-soup,"Taman Jurong Market & Food Centre, #03-145, 3 Yung Sheng Road, Jurong West, 618499, Singapore","1.3346605, 103.7215524"
+Bib Gourmand ,Tai Wah Pork Noodle,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/tai-wah-pork-noodle,"Hong Lim Market and Food Centre, #02-16, Blk 531A, Upper Cross Street, 051531, Singapore","1.2853948, 103.8458272"
+Bib Gourmand ,The Blue Ginger,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/the-blue-ginger-tanjong-pagar,"97 Tanjong Pagar Road, 088518, Singapore","1.2774181, 103.8437847"
+Bib Gourmand ,The Coconut Club (Beach Road),https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/the-coconut-club-1195654,"269 Beach Road, 199546, Singapore","1.3007264, 103.8601341"
+Bib Gourmand ,Tian Tian Hainanese Chicken Rice,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/tian-tian-hainanese-chicken-rice,"Maxwell Food Centre, #01-10/11, 1 Kadayanallur Street, 069184, Singapore","1.2803361, 103.844767"
+Bib Gourmand ,Tiong Bahru Hainanese Boneless Chicken Rice,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/tiong-bahru-hainanese-boneless-chicken-rice,"Tiong Bahru Market, #02-82, 30 Seng Poh Road, 168898, Singapore","1.2850771, 103.8328072"
+Bib Gourmand ,To-Ricos Kway Chap,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/to-ricos-guo-shi,"51 Old Airport Road Food Centre, #01-135/136, 51 Old Airport Road, 390051, Singapore","1.3082405, 103.8858445"
+Bib Gourmand ,True Blue Cuisine,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/true-blue-cuisine,"47/49 Armenian Street, 179937, Singapore","1.294089, 103.8492972"
+Bib Gourmand ,Un-Yang-Kor-Dai,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/un-yang-kor-dai,"#01-02, 57 South Bridge Road, 058688, Singapore","1.287117, 103.848241"
+Bib Gourmand ,Whole Earth,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/whole-earth,"76 Peck Seah Street, 079331, Singapore","1.2772485, 103.844715"
+Bib Gourmand ,Wok Hei Hor Fun,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/wok-hei-hor-fun,"Redhill Market, #01-94, 85 Redhill Lane, 150085, Singapore","1.287238, 103.8180948"
+Bib Gourmand ,Yhingthai Palace,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/yhingthai-palace,"#01-04, 36 Purvis Street, 188613, Singapore","1.2966831, 103.8548295"
+Bib Gourmand ,Yong Chun Wan Ton Noodle,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/yong-chun-wan-ton-noodle,"115 Bukit Merah View Market & Hawker Centre, #01-56, Blk 115 Bukit Merah View, 151115, Singapore","1.2854726, 103.822269"
+Bib Gourmand ,Zai Shun Curry Fish Head,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/zai-shun-curry-fish-head,"#01-205, 253 Jurong East Steet 24, 600253, Singapore","1.3434611, 103.7372044"
+Bib Gourmand ,Zhi Wei Xian Zion Road Big Prawn Noodle,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/fresh-taste-big-prawn-noodle,"Zion Riverside Food Centre, #04, 70 Zion Road, 247792, Singapore","1.2924675, 103.8313302"
+Bib Gourmand ,Zhup Zhup,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/zhup-zhup,"#01-01, 458 MacPherson Road, 368176, Singapore","1.3319292, 103.8824512"
+MICHELIN Selected ,545 Whampoa Prawn Noodles,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/545-whampoa-prawn-noodles,"Tekka Centre, #01-326, 665 Buffalo Road, 210665, Singapore","1.3058126, 103.8504298"
+MICHELIN Selected ,91 Fried Kway Teow Mee,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/91-fried-kway-teow-mee,"Golden Mile Food Centre, #01-91, 505 Beach Road, 199583, Singapore","1.3030908, 103.8639299"
+MICHELIN Selected ,Ah Heng Duck Rice,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/ah-heng-duck-rice,"Hong Lim Market and Food Centre, #02-64, Blk 531A, Upper Cross Street, 051531, Singapore","1.2853948, 103.8458272"
+MICHELIN Selected ,Ah Hock Fried Hokkien Noodles,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/ah-hock-fried-hokkien-noodles,"Chomp Chomp Food Centre, #01-27, 20 Kensington Park Road, 557269, Singapore","1.3642304, 103.8664113"
+MICHELIN Selected ,Ah Ter Authentic Teochew Fish Ball Noodles,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/ah-ter-teochew-fish-ball-noodles,"Amoy Street Food Centre, #01-14, 7 Maxwell Road, 069111, Singapore","1.2794274, 103.8467957"
+MICHELIN Selected ,Allauddin's Briyani,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/allauddin-s-briyani,"Tekka Centre, #01-229/232, 665 Buffalo Road, 210665, Singapore","1.3063839, 103.8507014"
+MICHELIN Selected ,Ammãkase,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/ammakase,"#04-48, One Raffles Place, 048616, Singapore","1.2843801, 103.8510181"
+MICHELIN Selected ,Ann Chin Handmade Popiah,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/ann-chin-handmade-popiah,"Chinatown Complex Market & Food Centre, #02-112, 335 Smith Street, 050335, Singapore","1.2819435, 103.8433995"
+MICHELIN Selected ,Aunty Oats Pancake,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/aunty-oats-pancake,"51 Old Airport Road Food Centre, #01-110, 51 Old Airport Road, 390051, Singapore","1.3082405, 103.8858445"
+MICHELIN Selected ,Bar-Roque Grill,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/bar-roque-grill,"165 Tanjong Pagar Road, 088539, Singapore","1.2748721, 103.8434929"
+MICHELIN Selected ,Bedok Chwee Kueh,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/bedok-chwee-kueh,"Bedok Interchange Hawker Centre, #01-19, 208 New Upper Changi Road, 460208, Singapore","1.3246551, 103.9305263"
+MICHELIN Selected ,Bhoomi,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/bhoomi-1218260,"#01-05, 1 Claymore Drive, 229594, Singapore","1.307336, 103.8293782"
+MICHELIN Selected ,Birds Of Paradise (Katong),https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/birds-of-paradise,"#01-05, 63 East Coast Road, 428776, Singapore","1.3051651, 103.9035207"
+MICHELIN Selected ,Boon Tong Kee Kway Chap‧Braised Duck,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/boon-tong-kee-kway-chap%E2%80%A7braised-duck,"Zion Riverside Food Centre, #024, 70 Zion Road, 247792, Singapore","1.2924675, 103.8313302"
+MICHELIN Selected ,Brasserie Astoria,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/brasserie-astoria-1209987,"Victoria Concert Hall, #01-01, 11 Empress Place, 179558, Singapore","1.288621, 103.851462"
+MICHELIN Selected ,Buko Nero,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/buko-nero,"126 Tanjong Pagar Road, 088534, Singapore","1.2776939, 103.8434371"
+MICHELIN Selected ,Butcher's Block,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/butcher-s-block,"Raffles Arcade, #02-02, 328 North Bridge Road, 188719, Singapore","1.2958405, 103.8538673"
+MICHELIN Selected ,C.M.Y. Satay,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/168-cmy-satay,"Chinatown Complex Market & Food Centre, #02-168, 335 Smith Street, 050335, Singapore","1.2819435, 103.8433995"
+MICHELIN Selected ,Ce Soir,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/ce-soir,"#01-03, 5B Portsdown Road, 139311, Singapore","1.2943592, 103.7959978"
+MICHELIN Selected ,Cheng Heng Kway Chap and Braised Duck Rice,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/cheng-heng-kway-chap-and-braised-duck-rice,"Holland Drive Market & Food Centre, #02-05, 44 Holland Drive, 270044, Singapore","1.308167, 103.7927992"
+MICHELIN Selected ,Chomp Chomp Satay,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/chomp-chomp-satay,"Chomp Chomp Food Centre, #01-34, 20 Kensington Park Road, 557269, Singapore","1.3642304, 103.8664113"
+MICHELIN Selected ,Chung Cheng,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/chung-cheng,"Golden Mile Food Centre, #01-59, 505 Beach Road, 199583, Singapore","1.3030908, 103.8639299"
+MICHELIN Selected ,Claudine,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/chung-cheng,"Golden Mile Food Centre, #01-59, 505 Beach Road, 199583, Singapore","1.3030908, 103.8639299"
+MICHELIN Selected ,Come Daily Fried Hokkien Prawn Mee,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/come-daily-fried-hokkien-prawn-mee,"127 Toa Payoh West Market & Food Centre, #02-27, Blk 127, Lorong 1 Toa Payoh, 310127, Singapore","1.3381303, 103.8447281"
+MICHELIN Selected ,Da Po,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/da-po,"Golden Mile Food Centre, #B1-53, 505 Beach Road, 199583, Singapore","1.3030908, 103.8639299"
+MICHELIN Selected ,Esquina,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/esquina,"16 Jiak Chuan Road, 089267, Singapore","1.2798722, 103.8420751"
+MICHELIN Selected ,Fatty Ox HK Kitchen,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/fatty-ox-hk-kitchen,"Chinatown Complex Market & Food Centre, #02-84, 335 Smith Street, 050335, Singapore","1.2819435, 103.8433995"
+MICHELIN Selected ,Feng Zhen Lor Mee,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/feng-zhen-lor-mee,"Taman Jurong Market & Food Centre, #03-146, 3 Yung Sheng Road, Jurong West, 618499, Singapore","1.3346605, 103.7215524"
+MICHELIN Selected ,Fiamma,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/fiamma,"Capella Hotel, 1 The Knolls, Sentosa Island, 098297, Singapore","1.2497222, 103.8241667"
+MICHELIN Selected ,Fiz,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/fiz,"#01-01/02, 21 Tanjong Pagar Road, 088444, Singapore","1.2795296, 103.8441068"
+MICHELIN Selected ,Fleur de Sel,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/fleur-de-sel,"#01-01, 64 Tras Street, 079003, Singapore","1.2777924, 103.8441805"
+MICHELIN Selected ,Foc (Clarke Quay),https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/foc-clarke-quay,"32 Keong Saik Road, 089139, Singapore","1.2803004, 103.8417202"
+MICHELIN Selected ,Food Street Fried Kway Teow Mee,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/food-street-fried-kway-teow-mee,"Chinatown Complex Market & Food Centre, #02-173, 335 Smith Street, 050335, Singapore","1.2819435, 103.8433995"
+MICHELIN Selected ,Fu He Turtle Soup,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/fu-he-turtle-soup,"Berseh Food Centre, #02-40, 166 Jalan Besar, 208877, Singapore","1.3073539, 103.8567494"
+MICHELIN Selected ,Garibaldi,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/garibaldi,"#01-02, 36 Purvis Street, 188613, Singapore","1.2964499, 103.8549138"
+MICHELIN Selected ,Ghim Moh Chwee Kueh,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/ghim-moh-chwee-kueh,"20 Ghim Moh Road Market & Food Centre, #01-54, Blk 20, Ghim Moh Road, 270020, Singapore","1.3109708, 103.7883085"
+MICHELIN Selected ,Gordon Grill,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/gordon-grill,"Goodwood Park Hotel, 22 Scotts Road, 228221, Singapore","1.3084774, 103.834405"
+MICHELIN Selected ,Gunther's,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/gunther-s,"#01-03, 36 Purvis Street, 188613, Singapore","1.2966208, 103.8549145"
+MICHELIN Selected ,Heng Gi Goose and Duck Rice,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/heng-gi-goose-and-duck-rice,"Tekka Centre, #01-335, 665 Buffalo Road, 210665, Singapore","1.30619, 103.85067"
+MICHELIN Selected ,Heng Long BBQ Chicken Rice,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/heng-long-bbq-chicken-rice,"Mei Ling Market & Food Centre, #02-42, 159 Mei Chin Road, 140159, Singapore","1.2932672, 103.8028827"
+MICHELIN Selected ,Hill Street Fried Kway Teow,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/hill-street-fried-kway-teow,"Pasar 16@Bedok (Bedok South Food Centre), #01-41, 16 Bedok South Road, 460016, Singapore","1.3204181, 103.9354884"
+MICHELIN Selected ,Hock Hai (Hong Lim) Curry Chicken Noodle,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/hock-hai-hong-lim-curry-chicken-noodle,"Bedok Interchange Hawker Centre, #01-58, 208 New Upper Changi Road, 460208, Singapore","1.3246551, 103.9305263"
+MICHELIN Selected ,Hock Seng Choon Fish Ball Kway Teow Mee,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/hock-seng-choon-fish-ball-kway-teow-mee,"Pasar 16@Bedok (Bedok South Food Centre), #01-50, 16 Bedok South Road, 460016, Singapore","1.3204181, 103.9354884"
+MICHELIN Selected ,Hoe Kee Kitchen,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/hoe-kee-kitchen,"Jurong West 505 Market & Food Centre, #01-39, Blk 505, Jurong West Street 52, 640505, Singapore","1.3498107, 103.7185004"
+MICHELIN Selected ,Hokkien Man Hokkien Mee,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/hokkien-man-hokkien-mee,"Blk 19, Toa Payoh 7, #01-264, Kim Keat Palm, 310019, Singapore","1.3343035, 103.8563265"
+MICHELIN Selected ,Hokkien Street Bak Kut Teh,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/hokkien-street-bak-kut-teh,"Hong Lim Market and Food Centre, #01-66, Blk 531A, Upper Cross Street, 051531, Singapore","1.2853948, 103.8458272"
+MICHELIN Selected ,Hong Peng La Mian Xiao Long Bao,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/hong-peng-la-mian-xiao-long-bao,"People's Park Complex Food Centre, #01-1064, 32 New Market Road, 050032, Singapore","1.2850751, 103.8425488"
+MICHELIN Selected ,Hong Wen Mutton Soup,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/hong-wen-mutton-soup,"Beauty World Food Centre #04-20, 144 Upper Bukit Timah Road, 588177, Singapore","1.342339, 103.7764232"
+MICHELIN Selected ,Hougang Traditional Famous Wanton Noodle,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/hougang-traditional-famous-wanton-noodle,"51 Old Airport Road Food Centre, #01-35, 51 Old Airport Road, 390051, Singapore","1.3082405, 103.8858445"
+MICHELIN Selected ,Hua Xing Bak Kut Teh,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/hua-xing-bak-kut-teh,"Yuhua Market & Hawker Centre, #01-171, Blk 347, Jurong East Avenue 1, Jurong East, 600347, Singapore","1.3450836, 103.7313403"
+MICHELIN Selected ,Huat Heng Fried Oyster,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/huat-heng-fried-oyster,"Whampoa Makan Place, #01-26, 90/91 Whampoa Drive 90, 320091, Singapore","1.3229833, 103.8549844"
+MICHELIN Selected ,Hup Hong Chicken Rice,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/hup-hong-chicken-rice,"Yuhua Village Market and Food Centre, #01-51, Blk 254, Jurong East Street 24, 600254, Singapore","1.3437065, 103.7378006"
+MICHELIN Selected ,Hup Kee Teochew Fishball Mee,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/hup-kee-teochew-fishball-mee,"Mei Ling Market & Food Centre, #02-38, 159 Mei Chin Road, 140159, Singapore","1.2932672, 103.8028827"
+MICHELIN Selected ,Ibid,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/ibid,"18 North Canal Road, 048830, Singapore","1.2864519, 103.8483506"
+MICHELIN Selected ,Ichigo Ichie,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/ichigo-ichie-1205515,"Claymore Connect, #01-16/17, 442 Orchard Road, 238879, Singapore","1.3073023, 103.8288259"
+MICHELIN Selected ,Imperial Treasure Super Peking Duck (Paragon),https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/imperial-treasure-super-peking-duck-paragon,"Paragon Shopping Centre, #05-42/45, 290 Orchard Road, 238859, Singapore","1.3039633, 103.8360565"
+MICHELIN Selected ,Iru Den,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/iru-den,"27 Scotts Road, 228222, Singapore","1.3104645, 103.8342214"
+MICHELIN Selected ,Ishizawa,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/ishizawa,"Raffles Arcade, #01-11, 328 North Bridge Road, 188719, Singapore","1.2958405, 103.8538673"
+MICHELIN Selected ,Ivy's Hainanese Herbal Mutton Soup,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/ivy-s-hainanese-herbal-mutton-soup,"Pasir Panjang Food Centre, #14, 121 Pasir Panjang Road, 118543, Singapore","1.27598, 103.7912552"
+MICHELIN Selected ,Jade Palace,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/jade-palace,"Forum The Shopping Mall, #B1-13, 583 Orchard Road, 238884, Singapore","1.3061667, 103.8284991"
+MICHELIN Selected ,Jian Bo Shui Kueh,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/jian-bo-shui-kueh,"Tiong Bahru Market, #02-05, 30 Seng Poh Road, 168898, Singapore","1.2850771, 103.8328072"
+MICHELIN Selected ,Jiang-Nan Chun,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/jiang-nan-chun,"Four Seasons Hotel, Level 2, 190 Orchard Boulevard, 248646, Singapore","1.3052773, 103.8285194"
+MICHELIN Selected ,Jiao Cai Seafood,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/jiao-cai-seafood,"Yishun Park Hawker Centre, #01-39, 51 Yishun Avenue 11, 768867, Singapore","1.4250185, 103.8447207"
+MICHELIN Selected ,Jin Hua,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/jin-hua,"51 Old Airport Road Food Centre, #01-120, 51 Old Airport Road, 390051, Singapore","1.3082405, 103.8858445"
+MICHELIN Selected ,Kang Le Fishball Noodles,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/kang-le-fishball-noodles,"Jurong West 505 Market & Food Centre, #01-29, Blk 505, Jurong West Street 52, 640505, Singapore","1.3498107, 103.7185004"
+MICHELIN Selected ,Kang's Wanton Noodle,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/kang-s-wanton-noodle,"Zion Riverside Food Centre, #06, 70 Zion Road, 247792, Singapore","1.2924675, 103.8313302"
+MICHELIN Selected ,Keng Eng Kee (Bukit Merah),https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/keng-eng-kee,"Blk 124, #01-136, Bukit Merah Lane 1, 150124, Singapore","1.285791, 103.8036735"
+MICHELIN Selected ,Ki Su NEW,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/ki-su,"#01-01, 60 Tras Street, 078999, Singapore","1.277896, 103.84423"
+MICHELIN Selected ,Koka Wanton Noodles,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/koka-wanton-noodles,"North Bridge Road Market & Food Centre, #01-99, 861 North Bridge Road, 198783, Singapore","1.3058333, 103.8638889"
+MICHELIN Selected ,L’Antica Pizzeria da Michele,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/l-antica-pizzeria-da-michele,"Mercure ICON Hotel, #01-08, 8 Club Street, 069472, Singapore","1.2826845, 103.8462529"
+MICHELIN Selected ,La D'Oro,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/la-d-oro,"Mandarin Gallery, #01-16/17, 333A Orchard Road, 238897, Singapore","1.3020467, 103.8366318"
+MICHELIN Selected ,Lao Jie Fang,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/lao-jie-fang,"Mei Ling Market & Food Centre, #02-15, 159 Mei Chin Road, 140159, Singapore","1.2932672, 103.8028827"
+MICHELIN Selected ,Latido,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/latido,"40 Tras Street, 078979, Singapore","1.2783507, 103.8442676"
+MICHELIN Selected ,Leon Kee Claypot Pork Rib Soup,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/leon-kee-claypot-pork-rib-soup,"Alexandra Village Food Centre, #01-18, Blk 120 Bukit Merah Lane 1, 150120, Singapore","1.2863397, 103.8045184"
+MICHELIN Selected ,Lolla,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/lolla,"22 Ann Siang Road, 069702, Singapore","1.2810148, 103.845552"
+MICHELIN Selected ,Long Kee Wanton Noodle,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/long-kee-wanton-noodle,"Jurong West 505 Market & Food Centre, #01-185, Blk 505, Jurong West Street 52, 640505, Singapore","1.3498107, 103.7185004"
+MICHELIN Selected ,Loong Kee Yong Tau Fu,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/loong-kee-yong-tau-fu,"Jurong West 505 Market & Food Centre, #01-31, Blk 505, Jurong West Street 52, 640505, Singapore","1.3498107, 103.7185004"
+MICHELIN Selected ,Lor 9 Beef Kway Teow,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/lor-9-beef-kway-teow,"237 Lorong 9 Geylang, 389296, Singapore","1.3129435, 103.8763759"
+MICHELIN Selected ,Lor Mee 178,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/lor-mee-178,"Tiong Bahru Market, #02-23, 30 Seng Poh Road, 168898, Singapore","1.2850771, 103.8328072"
+MICHELIN Selected ,Luke's,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/luke-s-gemmill-lane,"22 Gemmill Lane, 069257, Singapore","1.2821579, 103.8472443"
+MICHELIN Selected ,Maison Boulud,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/maison-boulud,"The Shoppes at Marina Bay Sands, #B1-15 & L1-83, 10 Bayfront Avenue, 018956, Singapore","1.2836889, 103.8591846"
+MICHELIN Selected ,Majestic,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/majestic-560345,"Marina One, The Heart (East Tower) #04-01, 5 Straits View, 018935, Singapore","1.2774852, 103.853931"
+MICHELIN Selected ,Maxwell Fuzhou Oyster Cake,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/maxwell-fuzhou-oyster-cake,"Maxwell Food Centre, #01-05, 1 Kadayanallur Street, 069184, Singapore","1.2803361, 103.844767"
+MICHELIN Selected ,Mellben Seafood (Ang Mo Kio),https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/mellben-seafood-ang-mo-kio,"Block 232, #01-1222, Ang Mo Kio Avenue 3, 560232, Singapore","1.3683021, 103.8371763"
+MICHELIN Selected ,Min Jiang at Dempsey,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/min-jiang-at-dempsey,"7A & 7B Dempsey Road, 249684, Singapore","1.3058046, 103.8098676"
+MICHELIN Selected ,Mustard,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/mustard,"32 Race Course Road, 218552, Singapore","1.3078807, 103.8507011"
+MICHELIN Selected ,Mustard Seed,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/mustard-seed,"75 Brighton Crescent, 559216, Singapore","1.3630015, 103.8712353"
+MICHELIN Selected ,Na Oh,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/na-oh,"Hyundai Motor Group Innovation Center Singapore, Level 3, 2 Bulim Link, 649674, Singapore","1.3534552, 103.7115728"
+MICHELIN Selected ,Nasi Lemak Ayam Taliwang,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/nasi-lemak-ayam-taliwang,"Yishun Park Hawker Centre, #01-33, 51 Yishun Avenue 11, 768867, Singapore","1.4250185, 103.8447207"
+MICHELIN Selected ,National Kitchen,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/national-kitchen,"National Gallery Singapore, #02-01, (Coleman Street entrance), 1 St. Andrew's Road, 178957, Singapore","1.2902217, 103.8515167"
+MICHELIN Selected ,New World Mutton Soup,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/new-world-mutton-soup,"Bedok Interchange Hawker Centre, #01-23, 208 New Upper Changi Road, 460208, Singapore","1.3246551, 103.9305263"
+MICHELIN Selected ,Nómada,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/nomada,"1 Keong Saik Road, 089109, Singapore","1.2787754, 103.8414845"
+MICHELIN Selected ,Nyonya Chendol,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/nyonya-chendol,"Chong Pang Market and Food Centre, #01-162, 105 Yishun Ring Road, 760105, Singapore","1.4316916, 103.8281085"
+MICHELIN Selected ,Olivia,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/olivia-1196203,"#01-03, 55 Keong Saik Road, 089158, Singapore","1.2807293, 103.8416412"
+MICHELIN Selected ,Open Farm Community,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/open-farm-community,"130E Minden Road, 248819, Singapore","1.3058319, 103.815445"
+MICHELIN Selected ,Osteria Mozza,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/osteria-mozza-1204765,"Hilton Orchard, Level 5, 333 Orchard Road, 238867, Singapore","1.3019551, 103.8366272"
+MICHELIN Selected ,People's Park Hainanese Chicken Rice,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/people-s-park-hainanese-chicken-rice,"People's Park Complex Food Centre, #01-1098, 32 New Market Road, 050032, Singapore","1.2850751, 103.8425488"
+MICHELIN Selected ,Podi & Poriyal,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/podi-poriyal,"486 Serangoon Road, 218151, Singapore","1.3138948, 103.8572166"
+MICHELIN Selected ,Poh Cheu (KPT Coffee Shop),https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/poh-cheu-kpt-coffee-shop,"Blk 127, KPT Coffee Shop, #01-230, Bukit Merah Lane 1, 150127, Singapore","1.2855154, 103.8035457"
+MICHELIN Selected ,Pondok Makan Indonesia,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/pondok-makan-indonesia,"Albert Centre, #01-123, 270 Queen Street, 180270, Singapore","1.3009888, 103.8540985"
+MICHELIN Selected ,Putien (Kitchener Road),https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/putien-kitchener-road,"127 Kitchener Road, 208514, Singapore","1.3095278, 103.8572711"
+MICHELIN Selected ,Quenino,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/quenino,"Artyzen Hotel, Level 4, 9 Cuscaden Road, 249719, Singapore","1.305764, 103.827012"
+MICHELIN Selected ,R&B Express,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/r-b-express,"Newton Food Centre, #01-76, 500 Clemenceau Avenue North, 229495, Singapore","1.3121155, 103.839389"
+MICHELIN Selected ,Redhill Pork Porridge,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/redhill-pork-porridge,"Redhill Market, #01-90, 85 Redhill Lane, 150085, Singapore","1.2871894, 103.8184555"
+MICHELIN Selected ,Rempapa,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/rempapa,"Park Place Residences at PLQ, #01-01/02/03, 2 Paya Lebar Road, 409053, Singapore","1.3166118, 103.8929568"
+MICHELIN Selected ,Revolver,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/revolver,"56 Tras Street, 078995, Singapore","1.2779485, 103.8442501"
+MICHELIN Selected ,Rojak‧Popiah & Cockle,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/rojak%E2%80%A7popiah-cockle,"Maxwell Food Centre, #01-56, 1 Kadayanallur Street, 069184, Singapore","1.2803361, 103.844767"
+MICHELIN Selected ,San Shu Gong (Geylang),https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/san-shu-gong,"#01-01,135 Geylang Road, 389226, Singapore","1.3133306, 103.8832876"
+MICHELIN Selected ,San Xiang Rou Cuo Mian,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/san-xiang-rou-cuo-mian,"ABC Brickworks Market & Food Centre, #01-132, Blk 6 Jalan Bukit Merah, 150006, Singapore","1.2869047, 103.8081551"
+MICHELIN Selected ,Shang Palace,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/shang-palace-501609,"Shangri-La Hotel, Lobby Level, 22 Orange Grove Road, 258350, Singapore","1.310965, 103.8264894"
+MICHELIN Selected ,Shanyuan Teochew Kway Teow Mian,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/shanyuan-teochew-kway-teow-mian,"North Bridge Road Market & Food Centre, #01-95, 861 North Bridge Road, 198783, Singapore","1.3058333, 103.8638889"
+MICHELIN Selected ,Sheng Seng Fried Prawn Noodle,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/sheng-seng-fried-prawn-noodle,"Pek Kio Market & Food Centre, #01-40, 41 Cambridge Road, 210041, Singapore","1.3162195, 103.8502213"
+MICHELIN Selected ,Shi Le Yuan,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/shi-le-yuan-570556,"Redhill Market, #01-82, 85 Redhill Lane, 150085, Singapore","1.2874028, 103.8182751"
+MICHELIN Selected ,Shunsui,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/kappo-shunsui-1195636,"#01-01, 17 HongKong Street, 059660, Singapore","1.2877813, 103.8473384"
+MICHELIN Selected ,Sin Hoi Sai (Tiong Bahru),https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/sin-hoi-sai-tiong-bahru,"Blk 55, #01-59/61/63, Tiong Bahru Road, 160055, Singapore","1.2844253, 103.8341996"
+MICHELIN Selected ,Singapore Famous Rojak,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/singapore-famous-rojak,"Albert Centre, #01-45, 270 Queen Street, 180270, Singapore","1.3009888, 103.8540985"
+MICHELIN Selected ,Solo,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/solo,"45 Amoy Street, 069871, Singapore","1.2804262, 103.8468933"
+MICHELIN Selected ,Somma,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/somma,"New Bahru, #04-02, 46 Kim Yam Road, 239351, Singapore","1.2928106, 103.8386992"
+MICHELIN Selected ,Sospiri,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/sospiri,"IOI Central Boulevard Towers, #07-02, 2 Central Boulevard, 018916, Singapore","1.2798851, 103.8514962"
+MICHELIN Selected ,Spago Dining Room,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/spago-dining-room,"Marina Bay Sands Hotel, Tower 2, Sands SkyPark, Level 57, 10 Bayfront Avenue, 018956, Singapore","1.2837126, 103.8591767"
+MICHELIN Selected ,Springleaf Prata Place (Spring Leaf Garden),https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/springleaf-prata-place,"1 Thong Soon Avenue, 787431, Singapore","1.3972702, 103.8187732"
+MICHELIN Selected ,Straits Chinese (Cecil Street),https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/straits-chinese,"Keck Seng Tower, #B1-01, 133 Cecil Street, 069535, Singapore","1.2802201, 103.8488418"
+MICHELIN Selected ,Sugarra,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/sugarra,"Hotel Michael, Level 1, Resorts World Sentosa, 8 Sentosa Gateway, 098269, Singapore","1.2547727, 103.8200881"
+MICHELIN Selected ,Sushi Hare,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/sushi-hare,"14 Stanley Street, 068733, Singapore","1.2803834, 103.8479549"
+MICHELIN Selected ,Sushi Katori,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/sushi-katori,"#01-03, 21 Tanjong Pagar Road, 088444, Singapore","1.2794614, 103.8440827"
+MICHELIN Selected ,Sushi Masaaki,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/sushi-masaaki,"South Beach Avenue, #B1-17, 26 Beach Road, 189768, Singapore","1.2942384, 103.8557517"
+MICHELIN Selected ,Sushi Ryujiro,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/sushi-ryujiro-1216077,"Shaw Centre, #01-19, 1 Scotts Road, 228208, Singapore","1.306246, 103.83172"
+MICHELIN Selected ,Sushi Sato,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/sushi-sato,"6B Dempsey Road, 247662, Singapore","1.30492, 103.8084376"
+MICHELIN Selected ,Sushi Yuki,https://guide.michelin.com/sg/en/tokyo-region/tokyo/restaurant/sushi-yuki-1213818,"5-17-4 Hiro, Shibuya-ku, 150-0012, Tokyo","35.6497661, 139.7203894"
+MICHELIN Selected ,Tambuah Mas (Orchard),https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/tambuah-mas-orchard,"Paragon, #B1-44, 290 Orchard Road, 238859, Singapore","1.3036374, 103.8350081"
+MICHELIN Selected ,Terra,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/terra-501665,"#01-01, 54 Tras Street, 078993, Singapore","1.2780267, 103.8441901"
+MICHELIN Selected ,The 1950's Coffee,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/the-50s,"Chinatown Complex Market & Food Centre, #02-048, 335 Smith Street, 050335, Singapore","1.2819435, 103.8433995"
+MICHELIN Selected ,The Prince,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/the-prince,"48 Peck Seah Street, 079317, Singapore","1.2779383, 103.844885"
+MICHELIN Selected ,Tien Lai Rice Stall,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/tien-lai-rice-stall,"Taman Jurong Market & Food Centre, #02-66, 3 Yung Sheng Road, Jurong West, 618499, Singapore","1.3346605, 103.7215524"
+MICHELIN Selected ,Tiong Bahru Lien Fa Shui Jing Pau,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/tiong-bahru-lien-fa-shui-jing-pau,"Alexandra Village Food Centre, #01-10, Blk 120 Bukit Merah Lane 1, 150120, Singapore","1.2863397, 103.8045184"
+MICHELIN Selected ,Toa Payoh 93 Soon Kueh,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/toa-payoh-93-soon-kueh,"Geylang Bahru Market & Food Centre, #01-68, 69 Geylang Bahru, 330069, Singapore","1.3214913, 103.8700885"
+MICHELIN Selected ,Torno Subito,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/torno-subito-1212304,"#01-02, 26 Dempsey Road, 249686, Singapore","1.3058919, 103.8113481"
+MICHELIN Selected ,Tow Kwar Pop,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/tow-kwar-pop,"Tiong Bahru Market, #02-06, 30 Seng Poh Road, 168898, Singapore","1.2850771, 103.8328072"
+MICHELIN Selected ,Traditional Hakka Lui Cha,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/traditional-hakka-lui-cha,"Jurong West 505 Market & Food Centre, #01-12, Blk 505, Jurong West Street 52, 640505, Singapore","1.3498107, 103.7185004"
+MICHELIN Selected ,Tunglok Heen,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/tunglok-heen,"Hotel Michael, #02-142/143, Resorts World Sentosa, 26 Sentosa Gateway, 098138, Singapore","1.2547727, 103.8200881"
+MICHELIN Selected ,Unforgettable Carrot Cake,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/unforgettable-carrot-cake,"115 Bukit Merah View Market & Hawker Centre, #01-30, Blk 115 Bukit Merah View, 151115, Singapore","1.2854726, 103.822269"
+MICHELIN Selected ,Ushidoki Wagyu Kaiseki,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/ushidoki-wagyu-kaiseki,"#01-01, 57 Tras Street, 078996, Singapore","1.2779431, 103.8444554"
+MICHELIN Selected ,Vue,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/vue-1190672,"OUE Bayfront, Level 19, 50 Collyer Quay, 049321, Singapore","1.2826632, 103.8528142"
+MICHELIN Selected ,Wah Lok,https://guide.michelin.com/sg/en/bangkok-region/bangkok/restaurant/wah-lok-1194310,"2F, Carlton Hotel Bangkok Sukhumvit, 491 Sukhumvit Road, Khlong Tan Nuea, Vadhana, 10110, Bangkok","13.7345758, 100.5645546"
+MICHELIN Selected ,Wakuda,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/wakuda,"Marina Bay Sands Hotel, Tower 2, Lobby, 10 Bayfront Avenue, 018972, Singapore","1.2824429, 103.8600927"
+MICHELIN Selected ,Whampoa Soya Bean & Grass Jelly Drinks,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/whampoa-soya-bean-grass-jelly-drinks,"Whampoa Makan Place, #01-52, 90/91 Whampoa Drive 91, 320091, Singapore","1.3229833, 103.8549844"
+MICHELIN Selected ,Xing Yun Hainanese Boneless Chicken Rice,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/xing-yun-hainanese-boneless-chicken-rice,"Yuhua Market & Hawker Centre, #01-202, Blk 347, Jurong East Avenue 1, Jurong East, 600347, Singapore","1.3450836, 103.7313403"
+MICHELIN Selected ,Yan Ting,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/yan-ting,"The St. Regis Hotel, Level 1U, 29 Tanglin Road, 247911, Singapore","1.306006, 103.8260475"
+MICHELIN Selected ,Ye Tang,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/ye-tang,"Beauty World Food Centre #04-26, 144 Upper Bukit Timah Road, 588177, Singapore","1.342339, 103.7764232"
+MICHELIN Selected ,Yì By Jereme Leung,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/yi-by-jereme-leung,"Raffles Arcade, #03-02, 328 North Bridge Road, 188719, Singapore","1.2958405, 103.8538673"
+MICHELIN Selected ,Yong Fu NEW,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/yong-fu-1218314,"Suntec City Mall, Tower 5, #01-444, 3 Temasek Boulevard, 038983, Singapore","1.2950324, 103.8583015"
+MICHELIN Selected ,Yong Kee Claypot Bak Kut Teh,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/yong-kee-claypot-bak-kut-teh,"Taman Jurong Market & Food Centre, #02-78, 3 Yung Sheng Road, Jurong West, 618499, Singapore","1.3346605, 103.7215524"
+MICHELIN Selected ,Yong Xiang Xing Tou Fu,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/yong-xiang-xing-tou-fu,"People's Park Complex Food Centre, #01-1084, 32 New Market Road, 050032, Singapore","1.2850751, 103.8425488"
+MICHELIN Selected ,Zhang Ji Shanghai La Mian Xiao Long Bao,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/zhang-ji-shanghai-la-mian-xiao-long-bao,"Alexandra Village Food Centre, #01-56, Blk 120 Bukit Merah Lane 1, 150120, Singapore","1.2863397, 103.8045184"
+MICHELIN Selected ,Zheng Zhi Wen Ji Pig’s Organ Soup,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/zheng-zhi-wen-ji-pig-s-organ-soup,"Clementi 448 Food Centre, #01-26, 448 Clementi Ave 3, 120448, Singapore","1.3134126, 103.7645571"
+MICHELIN Selected ,Zi Jing Cheng Hainanese Boneless Chicken Rice,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/zi-jing-cheng-hainanese-boneless-chicken-rice,"Alexandra Village Food Centre, #01-15, Blk 120 Bukit Merah Lane 1, 150120, Singapore","1.2863397, 103.8045184"
+MICHELIN Green Star ,Fiz,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/fiz,"#01-01/02, 21 Tanjong Pagar Road, 088444, Singapore","1.2795296, 103.8441068"
+MICHELIN Green Star ,Seroja,https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/seroja,"Duo Galleria, #01-30/31/32/33, 7 Fraser Street, 189356, Singapore","1.2996321, 103.8583743"`;
 
-        // MODIFIED: Changed function to be non-async, as it no longer fetches.
+        
         function loadMichelinData() {
             try {
-                // MODIFIED: Use the string variable instead of fetch()
                 const csvText = michelinCSVData;
                 
-                michelinLayer.clearLayers();
-
-                // Parse the CSV data
-                const lines = csvText.trim().split('\n').slice(1); // Skip header row
+                // --- Simple CSV Parser ---
+                const lines = csvText.trim().split('\n');
+                const headerLine = lines[0];
+                // Regex to split header, handling quotes
+                const headers = headerLine.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(h => h.replace(/"/g, '').trim());
                 
-                lines.forEach(line => {
-                    // Basic CSV parsing, handles commas in restaurant names if they are quoted
-                    const parts = line.split(',');
-                    if (parts.length < 4) return; // Skip incomplete lines
+                // Find the indices for the columns we need
+                const nameIndex = headers.indexOf('Name');
+                const categoryIndex = headers.indexOf('Category');
+                const urlIndex = headers.indexOf('URL');
+                const addressIndex = headers.indexOf('Address');
+                const latLngIndex = headers.indexOf('Lat, Long');
 
-                    const distinction = parts[0];
-                    const longitudeStr = parts[parts.length - 1];
-                    const latitudeStr = parts[parts.length - 2];
+                if (latLngIndex === -1) {
+                    console.error("Could not find 'Lat, Long' column in Michelin CSV. Found headers:", headers);
+                    return;
+                }
+                
+                michelinLayer.clearLayers();
+                
+                // Start from line 1 to skip header
+                for (let i = 1; i < lines.length; i++) {
+                    const line = lines[i];
+                    if (!line) continue;
+
+                    // Regex to split CSV, handling commas inside quotes
+                    const parts = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+                    if (parts.length < headers.length) continue;
+
+                    const restaurantName = parts[nameIndex].replace(/"/g, '').trim();
+                    const category = parts[categoryIndex].replace(/"/g, '').trim();
+                    const url = parts[urlIndex].replace(/"/g, '').trim();
+                    const address = parts[addressIndex].replace(/"/g, '').trim();
+                    const latLngStr = parts[latLngIndex].replace(/"/g, '').trim();
                     
-                    // Re-join parts of the name that might have been split by commas
-                    const restaurantName = parts.slice(1, parts.length - 2).join(',').replace(/^"(.*)"$/, '$1');
-
-                    // Parse lat/lon strings like "1.31° N"
-                    const lat = parseFloat(latitudeStr);
-                    const lon = parseFloat(longitudeStr);
-
-                    if (isNaN(lat) || isNaN(lon)) {
-                        console.warn('Skipping line, invalid lat/lon:', line);
-                        return;
+                    // Parse the "lat, long" string
+                    const latLngArr = latLngStr.split(',');
+                    if (latLngArr.length < 2) {
+                        console.warn('Skipping line, invalid lat/lon format:', line);
+                        continue;
                     }
 
-                    // Handle N/S/E/W directions (though data seems to be all N/E)
-                    const finalLat = latitudeStr.includes('° S') ? -lat : lat;
-                    const finalLon = longitudeStr.includes('° W') ? -lon : lon;
-
+                    const lat = parseFloat(latLngArr[0]);
+                    const lon = parseFloat(latLngArr[1]);
+                    
+                    if (isNaN(lat) || isNaN(lon)) {
+                        console.warn('Skipping line, invalid lat/lon numbers:', line);
+                        continue;
+                    }
+                    
                     const popupContent = `
                         <div style="font-size: 14px; line-height: 1.5;">
-                            <strong style="font-size: 15px;">${restaurantName}</strong><br>
-                            ${distinction}
+                            <strong style="font-size: 15px;"><a href="${url}" target="_blank">${restaurantName}</a></strong><br>
+                            ${category}<br>
+                            <small>${address}</small>
                         </div>`;
                     
-                    const marker = L.marker([finalLat, finalLon], { icon: michelinIcon })
-                                     .bindPopup(popupContent);
-                    
+                    const marker = L.marker([lat, lon], { icon: michelinIcon })
+                                     .bindPopup(popupContent, { minWidth: 280 });
                     michelinLayer.addLayer(marker);
-                });
-
-                // Add layer to map if toggle is checked
+                }
+                
                 if (michelinToggle.checked) {
                     map.addLayer(michelinLayer);
                 }
-
             } catch (error) {
-                // MODIFIED: Updated error message to be more general
-                console.error("Could not parse Michelin data:", error);
+                console.error("Could not fetch or parse Michelin data:", error);
             }
         }
-
-        // Add event listener for the toggle
+        
         michelinToggle.addEventListener('change', () => {
              if (michelinToggle.checked) map.addLayer(michelinLayer);
              else map.removeLayer(michelinLayer);
         });
-
-        // Initial load of Michelin data
+        
+        // Load the data immediately on script load
         loadMichelinData();
+        // --- End Michelin Logic ---
+
+        // --- Hawker Centre Overlay Logic (NEW) ---
+        const hawkerToggle = document.getElementById('hawkerToggle');
+        const hawkerIcon = L.divIcon({
+            html: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="26" height="26" style="color: #28a745; stroke: white; stroke-width: 0.5;">
+                        <circle cx="12" cy="12" r="10" />
+                   </svg>`,
+            className: 'hawker-icon',
+            iconSize: [26, 26],
+            iconAnchor: [13, 26],
+            popupAnchor: [0, -26]
+        });
+        const hawkerLayer = L.markerClusterGroup({
+            showCoverageOnHover: false,
+            spiderfyOnMaxZoom: true, // Allow spiderfying
+            maxClusterRadius: 50,
+            disableClusteringAtZoom: 17,
+            iconCreateFunction: function(cluster) {
+                const count = cluster.getChildCount();
+                let c = ' marker-cluster-';
+                if (count < 10) c += 'small';
+                else if (count < 100) c += 'medium';
+                else c += 'large';
+                return L.divIcon({
+                    html: `<div><span>${count}</span></div>`,
+                    className: 'marker-cluster marker-cluster-hawker' + c,
+                    iconSize: null
+                });
+            }
+        });
+
+        /* You can add more hawker centre data inside the backticks.
+        */
+        const hawkerCentreCSVData = `Name of Hawker Centre,Address,"Lat, Long"
+Adam Food Centre,"2, Adam Road, S(289876)","1.3241822, 103.8141863"
+Amoy Street Food Centre,"National Development Building, Annex B, Telok Ayer Street, S(069111)","1.279116, 103.8465144"
+Bedok Food Centre,"1, Bedok Road, S(469572)","1.3203848, 103.9555055"
+Beo Crescent Market,"38A, Beo Crescent, S(169982)","1.2887601, 103.8275773"
+Berseh Food Centre,"166, Jalan Besar, S(208877)","1.3073733, 103.8568615"
+Bukit Timah Market,"2A Jln Seh Chuan, Singapore 599213","1.3408341, 103.774541"
+Chomp Chomp Food Centre,"20, Kensington Park Road, S(557269)","1.3642662, 103.8665583"
+Commonwealth Crescent Market,"31, Commonwealth Crescent, S(149644)","1.3070246, 103.8005474"
+Dunman Food Centre,"271, Onan Road, S(424768)","1.3094261, 103.9018482"
+East Coast Lagoon Food Village,"1220, East Coast Parkway, S(468960)","1.3052353, 103.9234317"
+Geylang Serai Market,"Geylang Serai, S(402001)","1.316716, 103.898214"
+Golden Mile Food Centre,"505, Beach Road, S(199583)","1.3030908, 103.8639299"
+Holland Village Market & Food Centre,"1, Lorong Mambong, S(277700)","1.311087, 103.7949113"
+Kallang Estate Market,"17, Old Airport Road, S(397972)","1.3073665, 103.8840416"
+Margaret Drive Hawker Centre,"38A Margaret Dr, Singapore 142038","1.2977554, 103.8043741"
+Market Street Hawker Centre,"86, Market Street, CapitaSpring Building, S(048947)","1.2841885, 103.8500835"
+Marsiling Mall Hawker Centre,"4, Woodlands Street 12, S (738623)","1.4334888, 103.7797903"
+Maxwell Food Centre,"1, Kadayanallur Street, S(069184)","1.2802419, 103.8449058"
+Newton Food Centre,"500, Clemenceau Ave North, S(229495)","1.3121155, 103.839389"
+North Bridge Road Market & Food Centre,"861, North Bridge Road, S(198783)","1.3057224, 103.8639278"
+Pasir Panjang Food Centre,"121, Pasir Panjang Road, S(118543)","1.2759677, 103.7913379"
+Sembawang Hills Food Centre,"590, Upper Thomson Road, S(574419)","1.3724099, 103.8289874"
+Serangoon Garden Market,"49A, Serangoon Garden Way, S(555945)","1.3630929, 103.8666457"
+Taman Jurong Market & Food Centre,"3, Yung Sheng Road, S(618499)","1.3347853, 103.7215856"
+Tanglin Halt Market,"48A, Tanglin Halt Road, S(148813)","1.3009859, 103.7980608"
+Tiong Bahru Market,"30, Seng Poh Road, S(168898)","1.2851311, 103.8324041"
+Zion Riverside Food Centre,"70, Zion Road, S(247792)","1.292471, 103.831195"
+ABC Brickworks Market & Food Centre,"Blk 6, Jalan Bukit Merah, S(150006)","1.286999, 103.8080538"
+Albert Centre Market & Food Centre,"Blk 270, Queen Street, S(180270)","1.3009888, 103.8540985"
+Alexandra Village Food Centre,"Blk 120, Bukit Merah Lane 1, S(150120)","1.2866159, 103.8045852"
+Blk 117 Aljunied Ave 2,"Blk 117, Aljunied Ave 2, S(380117)","1.320706, 103.8870469"
+Blk 226D Ang Mo Kio Ave 1,"Blk 226D, Ang Mo Kio Ave 1, S(564226)","1.3668361, 103.839245"
+Blk 341 Ang Mo Kio Ave 1,"Blk 341, Ang Mo Kio Ave 1, S(560341)","1.3642258, 103.8483462"
+Blks 160/162 Ang Mo Kio Ave 4,"Blks 160/162, Ang Mo Kio Ave 4, S(560160/560162)","1.3762852, 103.839342"
+Blk 628 Ang Mo Kio Ave 4,"Blk 628, Ang Mo Kio Ave 4, S(560628)","1.380976, 103.8407372"
+Blk 724 Ang Mo Kio Ave 6,"Blk 724, Ang Mo Kio Ave 6, S(560724)","1.3721841, 103.8465592"
+Blk 409 Ang Mo Kio Ave 10,"Blk 409, Ang Mo Kio Ave 10, S(560409)","1.3627194, 103.8554121"
+Blk 453A Ang Mo Kio Ave 10,"Blk 453A, Ang Mo Kio Ave 10, S(561453)","1.3682812, 103.856318"
+Blk 527 Ang Mo Kio Ave 10,"Blk 527, Ang Mo Kio Ave 10, S(560527)","1.3728341, 103.8545062"
+Blk 226H Ang Mo Kio Street 22,"Blk 226H, Ang Mo Kio Street 22, S(568226)","1.3672414, 103.8400579"
+Blk 216 Bedok North Street 1,"Blk 216, Bedok North Street 1, S(460216)","1.3271291, 103.9333419"
+Blk 511 Bedok North Street 3,"Blk 511, Bedok North Street 3, S(460511)","1.333192, 103.9305229"
+Blk 538 Bedok North Street 3,"Blk 538, Bedok North Street 3, S(460538)","1.3320071, 103.9248218"
+Blk 85 Bedok North Street 4,"Blk 85, Bedok North Street 4, S(460085)","1.3320195, 103.9388588"
+Blk 630 Bedok Reservoir Road,"Blk 630, Bedok Reservoir Road, S(470630)","1.3330259, 103.9140862"
+Blk 16 Bedok South Road,"Blk 16, Bedok South Road, S(460016)","1.3205358, 103.9355169"
+Blk 29 Bendemeer Road,"Blk 29, Bendemeer Road, S(330029)","1.3191929, 103.863132"
+Blks 221A/B Boon Lay Place,"Blks 221A/B, Boon Lay Place, S(641221/642221)","1.3468732, 103.7128869"
+Blk 163 Bukit Merah Central,"Blk 163, Bukit Merah Central, S(150163)","1.2840007, 103.8171301"
+Blk 115 Bukit Merah View,"Blk 115, Bukit Merah View, S(151115)","1.2854816, 103.8218978"
+Blks 2 & 3 Changi Village Road,"Blks 2/3, Changi Village Road, S(500002/500003)","1.3846035, 103.9874016"
+Chinatown Complex Market & Hawker Centre,"Blk 335, Smith Street, S(050335)","1.2828487, 103.8429351"
+Chong Pang Market & Food Centre #,"Blks 104/105, Yishun Ring Road, S(760104/760105)","1.4260651, 103.8321027"
+Blks 79/79A Circuit Road,"Blks 79/79A, Circuit Road, S(370079/371079)","1.3262581, 103.8883695"
+Blk 80 Circuit Road,"Blk 80, Circuit Road, S(370080)","1.3279813, 103.886998"
+Blk 89 Circuit Road,"Blk 89, Circuit Road, S(370089)","1.3235956, 103.8854219"
+Blk 353 Clementi Ave 2,"Blk 353, Clementi Ave 2, S(120353)","1.314271, 103.7708115"
+Blk 448 Clementi Ave 3,"Blk 448, Clementi Ave 3, S(120448)","1.3133068, 103.76449"
+Blk 726 Clementi West Street 2,"Blk 726, Clementi West Street 2, S(120726)","1.303722, 103.7642184"
+Blk 7 Empress Road,"Blk 7, Empress Road, S(260007)","1.3163893, 103.8057652"
+Blk 4A Eunos Crescent,"Blk 4A, Eunos Crescent, S(402004)","1.3202759, 103.9041581"
+Blk 69 Geylang Bahru,"Blk 69, Geylang Bahru, S(330069)","1.3214541, 103.8701068"
+Blk 20 Ghim Moh Road,"Blk 20, Ghim Moh Road, S(270020)","1.3111246, 103.7882108"
+Blks 13/14 Haig Road,"Blks 13/14, Haig Road, S(430013/430014)","1.3094682, 103.8977379"
+Blks 22A/B Havelock Road,"Blks 22A/B, Havelock Road, S(161022/162022)","1.2890035, 103.8359745"
+Blk 44 Holland Drive,"Blk 44, Holland Drive, S(270044)","1.3080952, 103.7928012"
+Hong Lim Market & Food Centre,"Blk 531A, Upper Cross Street, S(051531)","1.2853166, 103.8458369"
+Blk 105 Hougang Ave 1,"Blk 105, Hougang Ave 1, S(530105)","1.3541539, 103.8899538"
+Blk 4A Jalan Batu,"Blk 4A, Jalan Batu, S(432004)","1.3024027, 103.8839505"
+Blk 112 Jalan Bukit Merah,"Blk 112, Jalan Bukit Merah, S(160112)","1.2799616, 103.8259635"
+Blk 1 Jalan Kukoh,"Blk 1, Jalan Kukoh, S(161001)","1.2881765, 103.8398758"
+Blk 347 Jurong East Ave 1,"Blk 347, Jurong East Ave 1, S(600347)","1.3454614, 103.7315889"
+Blk 254 Jurong East Street 24,"Blk 254, Jurong East Street 24, S(600254)","1.3434346, 103.7377572"
+Blk 505 Jurong West Street 52,"Blk 505, Jurong West Street 52, S(640505)","1.3496936, 103.7184064"
+Kovan Market & Food Centre,"Blk 209, Hougang Street 21, S(530209)","1.3591697, 103.8862162"
+Blk 84 Marine Parade Central,"Blk 84, Marine Parade Central, S(440084)","1.3023128, 103.9062142"
+Blk 50A Marine Terrace,"Blk 50A, Marine Terrace, S(441050)","1.3057088, 103.9157297"
+Blks 20/21 Marsiling Lane,"Blks 20/21, Marsiling Lane, S(730020/730021)","1.4450726, 103.775801"
+Blk 159 Mei Chin Road,"Blk 159, Mei Chin Road, S(140159)","1.29326, 103.8028246"
+Blk 58 New Upper Changi Road,"Blk 58, New Upper Changi Road, S(461058)","1.324161, 103.9411318"
+Blk 208B New Upper Changi Road #,"Blk 208B, New Upper Changi Road, S(462208)","1.3252803, 103.9313765"
+Blk 51 Old Airport Road #,"Blk 51, Old Airport Road, S(390051)","1.308232, 103.8858505"
+Pek Kio Market & Food Centre,"Blk 41A, Cambridge Road, S(211041)","1.3161875, 103.8501811"
+People's Park Food Centre,"Blk 32, New Market Road, S(050032)","1.2847915, 103.8424432"
+Blk 79 Redhill Lane,"Blk 79, Redhill Lane, S(150079)","1.2878415, 103.8182751"
+Blk 85 Redhill Lane,"Blk 85, Redhill Lane, S(150085)","1.2874028, 103.8182751"
+Blk 320 Shunfu Road,"Blk 320, Shunfu Road, S(570320)","1.35198, 103.8371171"
+Blk 49 Sims Place,"Blk 49, Sims Place, S(380049)","1.3170454, 103.8789403"
+Blk 137 Tampines Street 11,"Blk 137, Tampines Street 11, S(521137)","1.3456696, 103.9445494"
+Blk 6 Tanjong Pagar Plaza,"Blk 6, Tanjong Pagar Plaza, S(081006)","1.2766945, 103.8431415"
+Blk 37A Teban Gardens Road,"Blk 37A, Teban Gardens Road, S(601037)","1.3208952, 103.7427647"
+Tekka Market,"Blk 665, Buffalo Road, S(210665)","1.3063839, 103.8507014"
+Blk 11 Telok Blangah Crescent,"Blk 11, Telok Blangah Crescent, S(090011)","1.277377, 103.8187097"
+Blk 79 Telok Blangah Drive,"Blk 79, Telok Blangah Drive, S(100079)","1.2733837, 103.807615"
+Blk 82 Telok Blangah Drive,"Blk 82, Telok Blangah Drive, S(100082)","1.2738993, 103.8079857"
+Blk 36 Telok Blangah Rise,"Blk 36, Telok Blangah Rise, S(090036)","1.2725976, 103.8216487"
+Blk 127 Toa Payoh Lorong 1,"Blk 127, Lorong 1 Toa Payoh, S(310127)","1.338036, 103.8447232"
+Blk 74 Toa Payoh Lorong 4,"Blk 74, Lorong 4 Toa Payoh, S(310074)","1.3344784, 103.8519727"
+Blk 93 Toa Payoh Lorong 4,"Blk 93, Lorong 4 Toa Payoh, S(310093)","1.338458, 103.8496789"
+Blk 75 Toa Payoh Lorong 5 #,"Blk 75, Lorong 5 Toa Payoh, S(310075)","1.3360261, 103.8529651"
+Blk 22 Toa Payoh Lorong 7,"Blk 22, Lorong 7 Toa Payoh, S(310022)","1.3352429, 103.8571465"
+Blk 210 Toa Payoh Lorong 8,"Blk 210, Lorong 8 Toa Payoh, S(310210)","1.3403169, 103.8545062"
+Blk 17 Upper Boon Keng Road,"Blk 17, Upper Boon Keng Road, S(380017)","1.3150436, 103.8717193"
+Blk 502 West Coast Drive,"Blk 502, West Coast Drive, S(120502)","1.3117989, 103.7590932"
+Blk 503 West Coast Drive,"Blk 503, West Coast Drive, S(120503)","1.3118695, 103.7597825"
+Blk 90 Whampoa Drive #,"Blk 90, Whampoa Drive, S(320090)","1.3230663, 103.8550175"
+Blks 91/92 Whampoa Drive #,"Blks 91/92, Whampoa Drive, S(320091/320092)","1.3234136, 103.8540838"
+Ci Yuan Hawker Centre,"51, Hougang Ave 9, S(538776)","1.375294, 103.8829476"
+Bukit Panjang Hawker Centre & Market,"2, Bukit Panjang Ring Road, S(679947)","1.3776506, 103.7724817"
+Hawker Centre @ Our Tampines Hub,"1 Tampines Walk, S(528523)","1.3532116, 103.9408654"
+Kampung Admiralty Hawker Centre,"Blk 676, Woodlands Drive 71, #02-44, S(730676)","1.4397745, 103.8008056"
+Yishun Park Hawker Centre,"51, Yishun Avenue 11, S(768867)","1.4249457, 103.8447228"
+Jurong West Hawker Centre,"50, Jurong West Street 61, S(648202)","1.3412561, 103.6974152"
+Pasir Ris Central Hawker Centre,"110, Pasir Ris Central, S(519641)","1.3734535, 103.9515571"
+Fernvale Hawker Centre and Market,"21, Sengkang West Avenue, S(797650)","1.3913607, 103.8770195"
+One Punggol Hawker Centre,"1, Punggol Drive, S(828629)","1.4085237, 103.9049607"
+Senja Hawker Centre,"2, Senja Close, S(677632)","1.3878581, 103.7611279"
+Bukit Canberra Hawker Centre,"21, Canberra Link, S(756973)","1.4489242, 103.8233731"
+Buangkok Hawker Centre,"70, Compassvale Bow, S(544692)","1.3825507, 103.8921989"
+Anchorvale Village Hawker Centre,"339, Anchorvale Road, S(540339)","1.3968099, 103.8884872"
+Woodleigh Village Hawker Centre,"202C, Woodleigh Link, S(363202)","1.3397472, 103.871629"
+Bukit Batok West Hawker Centre,"Blk 469, Bukit Batok West Ave 9, S(650469)","1.3551385, 103.7417936"
+Punggol Coast Hawker Centre,"84 Punggol Way, S(829911)","1.4144369, 103.9084751"`;
+
+        function loadHawkerCentreData() {
+            try {
+                const csvText = hawkerCentreCSVData;
+                
+                const lines = csvText.trim().split('\n');
+                const headerLine = lines[0];
+                const headers = headerLine.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(h => h.replace(/"/g, '').trim());
+                
+                const nameIndex = headers.indexOf('Name of Hawker Centre');
+                const addressIndex = headers.indexOf('Address');
+                const latLngIndex = headers.indexOf('Lat, Long');
+
+                if (latLngIndex === -1) {
+                    console.error("Could not find 'Lat, Long' column in Hawker CSV. Found headers:", headers);
+                    return;
+                }
+                
+                hawkerLayer.clearLayers();
+                
+                for (let i = 1; i < lines.length; i++) {
+                    const line = lines[i];
+                    if (!line) continue;
+
+                    const parts = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+                    if (parts.length < headers.length) continue;
+
+                    const name = parts[nameIndex].replace(/"/g, '').trim();
+                    const address = parts[addressIndex].replace(/"/g, '').trim();
+                    const latLngStr = parts[latLngIndex].replace(/"/g, '').trim();
+                    
+                    const latLngArr = latLngStr.split(',');
+                    if (latLngArr.length < 2) {
+                        console.warn('Skipping Hawker line, invalid lat/lon format:', line);
+                        continue;
+                    }
+
+                    const lat = parseFloat(latLngArr[0]);
+                    const lon = parseFloat(latLngArr[1]);
+                    
+                    if (isNaN(lat) || isNaN(lon)) {
+                        console.warn('Skipping Hawker line, invalid lat/lon numbers:', line);
+                        continue;
+                    }
+                    
+                    const popupContent = `
+                        <div style="font-size: 14px; line-height: 1.5;">
+                            <strong style="font-size: 15px;">${name}</strong><br>
+                            <small>${address}</small>
+                        </div>`;
+                    
+                    const marker = L.marker([lat, lon], { icon: hawkerIcon })
+                                     .bindPopup(popupContent, { minWidth: 280 });
+                    hawkerLayer.addLayer(marker);
+                }
+                
+                if (hawkerToggle.checked) {
+                    map.addLayer(hawkerLayer);
+                }
+            } catch (error) {
+                console.error("Could not parse Hawker Centre data:", error);
+            }
+        }
+
+        hawkerToggle.addEventListener('change', () => {
+             if (hawkerToggle.checked) map.addLayer(hawkerLayer);
+             else map.removeLayer(hawkerLayer);
+        });
+
+        // Load the data immediately on script load
+        loadHawkerCentreData();
+        // --- End Hawker Centre Logic ---
 
     </script>
  
