@@ -284,34 +284,40 @@
         const modalImg = document.getElementById("modalImage");
         const modalClose = document.getElementById("modalCloseButton");
 
-        // Use event delegation on the map to catch clicks on popup links
-        map.on('popupopen', function() {
-            // Find the link inside the newly opened popup
-            // We use a query selector on the popup container
-            const popupNode = document.querySelector('.leaflet-popup-content');
-            if (!popupNode) return;
-
-            const link = popupNode.querySelector('.popup-full-image-link');
-            if (link) {
-                // We need to clone and replace the node to remove old listeners
-                const newLink = link.cloneNode(true);
-                link.parentNode.replaceChild(newLink, link);
-                
-                newLink.addEventListener('click', function(e) {
-                    e.preventDefault(); // Stop the link's default # action
-                    const imageUrl = e.target.getAttribute('data-full-image-url');
+        // Use event delegation on the map container.
+        // This is more robust than listening to 'popupopen'.
+        map.on('click', function(e) {
+            // Check if the click target or its parent is the link
+            let target = e.originalEvent.target;
+            
+            // Traverse up the DOM if the click was on a child of the link
+            while (target && target !== map.getContainer()) {
+                if (target.classList && target.classList.contains('popup-full-image-link')) {
+                    e.originalEvent.preventDefault(); // Stop the link's default # action
+                    const imageUrl = target.getAttribute('data-full-image-url');
                     if (imageUrl) {
                         modalImg.src = imageUrl;
                         modal.style.display = "flex"; // Show the modal
                     }
-                });
+                    return; // Exit once handled
+                }
+                target = target.parentNode;
             }
         });
+
 
         // Function to close the modal
         function closeModal() {
             modal.style.display = "none";
             modalImg.src = ""; // Clear the image
+        }
+
+        // NEW: Global function to open the image viewer
+        function openImageViewer(imageUrl) {
+            if (imageUrl) {
+                modalImg.src = imageUrl;
+                modal.style.display = "flex"; // Show the modal
+            }
         }
 
         // Close when clicking the 'x'
@@ -387,7 +393,7 @@
                                             <p><strong>Camera ID:</strong> ${camera_id}<br>
                                                <strong>Updated:</strong> ${new Date(timestamp).toLocaleString()}
                                             </p>
-                                            <a href="#" data-full-image-url="${image}" class="popup-full-image-link">View full image</a>
+                                            <a href="#" onclick="openImageViewer('${image}'); return false;" class="popup-full-image-link">View full image</a>
                                          </div>`;
                     const marker = L.marker([location.latitude, location.longitude], { icon: cameraIcon }).bindPopup(popupContent, { minWidth: 280 });
                     trafficLayer.addLayer(marker);
