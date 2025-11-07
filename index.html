@@ -269,10 +269,12 @@
         });
         const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19,
+            maxNativeZoom: 19, // Tell Leaflet to stretch tiles past zoom 19
             attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         });
         const oneMapLayer = L.tileLayer('https://www.onemap.gov.sg/maps/tiles/Default_HD/{z}/{x}/{y}.png', {
             maxZoom: 19,
+            maxNativeZoom: 19, // Tell Leaflet to stretch tiles past zoom 19
             attribution: 'Map data &copy; <a href="https://www.onemap.gov.sg/" target="_blank">OneMap</a>'
         });
 
@@ -283,28 +285,6 @@
         const modal = document.getElementById("imageModal");
         const modalImg = document.getElementById("modalImage");
         const modalClose = document.getElementById("modalCloseButton");
-
-        // Use event delegation on the map container.
-        // This is more robust than listening to 'popupopen'.
-        map.on('click', function(e) {
-            // Check if the click target or its parent is the link
-            let target = e.originalEvent.target;
-            
-            // Traverse up the DOM if the click was on a child of the link
-            while (target && target !== map.getContainer()) {
-                if (target.classList && target.classList.contains('popup-full-image-link')) {
-                    e.originalEvent.preventDefault(); // Stop the link's default # action
-                    const imageUrl = target.getAttribute('data-full-image-url');
-                    if (imageUrl) {
-                        modalImg.src = imageUrl;
-                        modal.style.display = "flex"; // Show the modal
-                    }
-                    return; // Exit once handled
-                }
-                target = target.parentNode;
-            }
-        });
-
 
         // Function to close the modal
         function closeModal() {
@@ -387,7 +367,7 @@
                 trafficLayer.clearLayers();
                 cameras.forEach(camera => {
                     const { location, image, timestamp, camera_id } = camera;
-                    // MODIFIED: Changed link to a data-attribute link
+                    // MODIFIED: Changed link to use onclick
                     const popupContent = `<div>
                                             <img src="${image}" alt="Traffic image from camera ${camera_id}">
                                             <p><strong>Camera ID:</strong> ${camera_id}<br>
@@ -456,9 +436,9 @@
         // --- Taxi Availability Overlay Logic ---
         const taxiLayer = L.markerClusterGroup({
             showCoverageOnHover: false,
-            spiderfyOnMaxZoom: true, // Allow spiderfying for overlapping taxis
+            spiderfyOnMaxZoom: false, // Set to false as requested
             maxClusterRadius: 60,
-            disableClusteringAtZoom: 16,
+            disableClusteringAtZoom: 16, // At zoom 16, clusters break apart
             iconCreateFunction: function(cluster) {
                 const count = cluster.getChildCount();
                 let c = ' marker-cluster-';
@@ -521,7 +501,7 @@
             showCoverageOnHover: false,
             spiderfyOnMaxZoom: true, // Allow spiderfying for same-address restaurants
             maxClusterRadius: 50,
-            disableClusteringAtZoom: 17,
+            // Removed disableClusteringAtZoom to fix overlapping issue
             iconCreateFunction: function(cluster) {
                 const count = cluster.getChildCount();
                 let c = ' marker-cluster-';
@@ -930,7 +910,7 @@ MICHELIN Green Star ,Seroja,https://guide.michelin.com/sg/en/singapore-region/si
             showCoverageOnHover: false,
             spiderfyOnMaxZoom: true, // Allow spiderfying
             maxClusterRadius: 50,
-            disableClusteringAtZoom: 17,
+            // Removed disableClusteringAtZoom to fix overlapping issue
             iconCreateFunction: function(cluster) {
                 const count = cluster.getChildCount();
                 let c = ' marker-cluster-';
@@ -1091,7 +1071,7 @@ Punggol Coast Hawker Centre,"84 Punggol Way, S(829911)","1.4144369, 103.9084751"
                 
                 hawkerLayer.clearLayers();
                 
-                for (let i = 1; i < lines.length; i++) {
+                for (let i = 1; i < lines.length; i++) { // Start from 1 to skip header
                     const line = lines[i];
                     if (!line) continue;
 
